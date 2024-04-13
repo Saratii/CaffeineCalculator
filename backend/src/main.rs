@@ -16,7 +16,7 @@ async fn main() -> std::io::Result<()> {
         let response_data = ResponseData {
             message: String::from("String received by the server."),
         };
-        Ok(HttpResponse::Ok().body(format!("go fuck yourself nigger {:?}", response_data)))
+        Ok(HttpResponse::Ok().body(format!("go fuck yourself {:?}", response_data)))
     }
 
     HttpServer::new(|| {
