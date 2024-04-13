@@ -18,6 +18,9 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
                         BinaryOperation::Divide => {
                             return Ok(left_result / right_result);
                         }
+                        BinaryOperation::Modulus => {
+                            return Ok(left_result % right_result);
+                        }
                     }
                 }
                 (Ok(_), Err(e)) => {

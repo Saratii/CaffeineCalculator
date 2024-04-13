@@ -8,6 +8,7 @@ pub enum Token {
     Minus,
     Times,
     Divide,
+    Modulus,
     LeftParen,
     RightParen,
 }
@@ -17,6 +18,7 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
     let minus_re = Regex::new(r"^-").unwrap();
     let times_re = Regex::new(r"^\*").unwrap();
     let divide_re = Regex::new(r"^/").unwrap();
+    let modulus_re = Regex::new(r"^\%").unwrap();
     let left_paren_re = Regex::new(r"^\(").unwrap();
     let right_paren_re = Regex::new(r"^\)").unwrap();
     let number_re = Regex::new(r"^\d+(\.\d+)?").unwrap();
@@ -37,6 +39,9 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
             input = &input[1..];
         } else if divide_re.is_match(input) {
             tokens.push_back(Token::Divide);
+            input = &input[1..];
+        } else if modulus_re.is_match(input) {
+            tokens.push_back(Token::Modulus);
             input = &input[1..];
         } else if left_paren_re.is_match(input) {
             tokens.push_back(Token::LeftParen);
@@ -79,5 +84,13 @@ mod test {
         let input = "+ - * / ( 123 )".to_string();
         let input = tokenize(input).unwrap();
         assert_eq!(input, vec![Token::Plus, Token::Minus, Token::Times, Token::Divide, Token::LeftParen, Token::Number(123.0), Token::RightParen]);
+    }
+
+    #[test]
+
+    fn modulus_test() {
+        let input = "5%5".to_string();
+        let input = tokenize(input).unwrap();
+        assert_eq!(input, vec![Token::Number(5.0), Token::Modulus, Token::Number(5.0)])
     }
 }

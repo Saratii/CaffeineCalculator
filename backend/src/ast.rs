@@ -30,6 +30,7 @@ pub enum BinaryOperation {
     Minus,
     Times,
     Divide,
+    Modulus,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -44,6 +45,7 @@ pub enum UnfinishedNode {
     Minus,
     Times,
     Divide,
+    Modulus,
     LeftParen,
     Negate,
 }
@@ -79,6 +81,9 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
             }
             Token::Divide => {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Divide))
+            }
+            Token::Modulus => {
+                stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Modulus))
             }
             Token::LeftParen => {
                 if stack.len() > 0{
@@ -199,6 +204,14 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String>{ //unfin
                                 left: Box::new(left),
                                 right: Box::new(right),
                                 operation: BinaryOperation::Divide,
+                            })
+                        }
+                        UnfinishedNode::Modulus => {
+                            ASTNode::BinaryNode(BinaryNode {
+                                priority: 2,
+                                left: Box::new(left),
+                                right: Box::new(right),
+                                operation: BinaryOperation::Modulus,
                             })
                         }
                         _ => {
@@ -362,4 +375,19 @@ mod tests {
             operation: BinaryOperation::Times
         })))
     }
+
+    #[test]
+
+    fn modulus_ast() {
+        let tokens = tokenize("10%5".to_string());
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
+            priority: 2,
+            left: Box::new(ASTNode::NumberNode(10.0)),
+            right: Box::new(ASTNode::NumberNode(5.0)),
+            operation: BinaryOperation::Modulus,
+        })));
+    }
+
+
 }
