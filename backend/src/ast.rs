@@ -30,6 +30,8 @@ pub enum BinaryOperation {
     Minus,
     Times,
     Divide,
+    Exponent,
+    Modulus,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -46,6 +48,8 @@ pub enum UnfinishedNode {
     Divide,
     LeftParen,
     Negate,
+    Modulus,
+    Exponent,
 }
 
 pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
@@ -82,6 +86,12 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
             }
             Token::Divide => {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Divide))
+            }
+            Token::Modulus => {
+                stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Modulus))
+            }
+            Token::Exponent => {
+                stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Exponent))
             }
             Token::LeftParen => {
                 if stack.len() > 0{
@@ -225,6 +235,14 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
                                     left: Box::new(left),
                                     right: Box::new(right),
                                     operation: BinaryOperation::Times,
+                                })
+                            }
+                            UnfinishedNode::Exponent => {
+                                ASTNode::BinaryNode(BinaryNode {
+                                    priority: 3,
+                                    left: Box::new(left),
+                                    right: Box::new(right),
+                                    operation: BinaryOperation::Exponent,
                                 })
                             }
                             UnfinishedNode::Divide => {
@@ -412,5 +430,17 @@ mod tests {
             })),
             operation: BinaryOperation::Times,
         }));
+    }
+
+    #[test]
+    fn exponent_ast() {
+        let tokens = tokenize("10^2".to_string());
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
+            priority: 2,
+            left: Box::new(ASTNode::NumberNode(10.0)),
+            right: Box::new(ASTNode::NumberNode(2.0)),
+            operation: BinaryOperation::Exponent,
+        })));
     }
 }
