@@ -1,1 +1,1 @@
-/Users/jonathankazmaier/ToBeDecided/backend/target/debug/backend: /Users/jonathankazmaier/ToBeDecided/backend/src/main.rs
+C:\Users\fried\Programming\ToBeDecided\backend\target\debug\backend.exe: C:\Users\fried\Programming\ToBeDecided\backend\src\ast.rs C:\Users\fried\Programming\ToBeDecided\backend\src\eval.rs C:\Users\fried\Programming\ToBeDecided\backend\src\main.rs C:\Users\fried\Programming\ToBeDecided\backend\src\tokens.rs

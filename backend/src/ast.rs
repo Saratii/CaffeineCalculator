@@ -45,9 +45,10 @@ pub enum UnfinishedNode {
     Times,
     Divide,
     LeftParen,
+    Negate,
 }
 
-pub fn build_ast(mut tokens: VecDeque<Token>) -> ASTNode {
+pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
     let mut stack = vec![];
     while !tokens.is_empty() {
         let token = tokens.pop_front().unwrap();
@@ -60,7 +61,18 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> ASTNode {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Plus))
             }
             Token::Minus => {
-                stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Minus))
+                let pred = stack.pop().unwrap();
+                match pred{
+                    ASTNode::UnfinishedNode(_) => {
+                        stack.push(pred);
+                        stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Negate))
+                    },
+                    _ => {
+                        stack.push(pred);
+                        stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Minus))
+                    }
+                }
+                
             }
             Token::Times => {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Times))
@@ -69,6 +81,33 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> ASTNode {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Divide))
             }
             Token::LeftParen => {
+                if stack.len() > 0{
+                    let pred = stack.pop().unwrap();
+                    match pred.clone() {
+                        ASTNode::BinaryNode(_) => {
+                            stack.push(pred);
+                            stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Times));
+                        },
+                        ASTNode::UnaryNode(a) => {
+                            match a.operation{
+                                UnaryOperation::Negate => {
+                                    stack.push(pred);
+                                },
+                                UnaryOperation::Parens => {
+                                    stack.push(pred);
+                                    stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Times));
+                                },
+                            }
+                        },
+                        ASTNode::NumberNode(_) => {
+                            stack.push(pred);
+                            stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Times));
+                        },
+                        ASTNode::UnfinishedNode(_) => {
+                            stack.push(pred);
+                        },
+                    }
+                }
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::LeftParen))
             }
             Token::RightParen => {
@@ -90,17 +129,20 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> ASTNode {
                             panic!();
                         }
                     }
-                    combine_finished_val(&mut stack);
+                    match combine_finished_val(&mut stack){
+                        Ok(_) => {},
+                        Err(e) => {return Err(e);},
+                    }
                 }
             }
         }
     }
-    return stack.pop().unwrap();
+    Ok(stack.pop().unwrap())
 }
 
-fn combine_finished_val(stack: &mut Vec<ASTNode>) {
+fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String>{ //unfinished, need to combine negatives 2*-3 
     if stack.len() == 1 {
-        return
+        return Ok(())
     }
     let right= stack.pop().unwrap();
     let op = stack.pop().unwrap();
@@ -108,12 +150,22 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) {
         ASTNode::UnfinishedNode(UnfinishedNode::LeftParen) => {
             stack.push(op);
             stack.push(right);
+            Ok(())
         }
         ASTNode::UnfinishedNode(op) => {
             let left = stack.pop().unwrap();
             match left {
                 ASTNode::UnfinishedNode(_) => {
-                    panic!();
+                    match op {
+                        UnfinishedNode::Minus => {
+                            stack.push(left);
+                            stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Negate));
+                            Ok(())
+                        },
+                        _ => {
+                            return Err(format!("Invalid sequence: {:?}", stack))
+                        }
+                    }
                 }
                 _ => {
                     stack.push(apply_priority(match op {
@@ -153,7 +205,7 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) {
                             panic!();
                         }
                     }));
-                    combine_finished_val(stack);
+                    return combine_finished_val(stack);
                 }
             }
         }
@@ -198,50 +250,49 @@ fn apply_priority(node: ASTNode) -> ASTNode {
 #[cfg(test)]
 mod tests {
     use crate::ast::{ASTNode, BinaryNode, BinaryOperation, build_ast, UnaryNode, UnaryOperation};
-    use crate::ast::ASTNode::NumberNode;
     use crate::tokens::tokenize;
 
     #[test]
     fn addition_ast() {
         let tokens = tokenize("1+2".to_string());
-        let ast = build_ast(tokens);
-        assert_eq!(ast, ASTNode::BinaryNode(BinaryNode {
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
             priority: 1,
             left: Box::new(ASTNode::NumberNode(1.0)),
             right: Box::new(ASTNode::NumberNode(2.0)),
             operation: BinaryOperation::Plus,
-        }));
+        })));
     }
 
     #[test]
     fn subtraction_ast() {
         let tokens = tokenize("1-2".to_string());
-        let ast = build_ast(tokens);
-        assert_eq!(ast, ASTNode::BinaryNode(BinaryNode {
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
             priority: 1,
             left: Box::new(ASTNode::NumberNode(1.0)),
             right: Box::new(ASTNode::NumberNode(2.0)),
             operation: BinaryOperation::Minus,
-        }));
+        })));
     }
 
     #[test]
     fn multiplication_ast() {
         let tokens = tokenize("1 * 2".to_string());
-        let ast = build_ast(tokens);
-        assert_eq!(ast, ASTNode::BinaryNode(BinaryNode {
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
             priority: 2,
             left: Box::new(ASTNode::NumberNode(1.0)),
             right: Box::new(ASTNode::NumberNode(2.0)),
             operation: BinaryOperation::Times,
-        }));
+        })));
     }
 
     #[test]
     fn addition_and_multiplication_ast() {
         let tokens = tokenize("1 + 2 * 3 + 4".to_string());
-        let ast = build_ast(tokens);
-        assert_eq!(ast, ASTNode::BinaryNode(BinaryNode {
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
             priority: 1,
             left: Box::new(
                 ASTNode::BinaryNode(BinaryNode {
@@ -258,14 +309,14 @@ mod tests {
             ),
             right: Box::new(ASTNode::NumberNode(4.0)),
             operation: BinaryOperation::Plus,
-        }));
+        })));
     }
 
     #[test]
     fn parenthetical_test_ast() {
         let tokens = tokenize(" 1 + 2 * 3 + ( 4 - 5 ) * 6 ".to_string());
-        let ast = build_ast(tokens);
-        assert_eq!(ast, ASTNode::BinaryNode(BinaryNode {
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
             priority: 1,
             left: Box::new(ASTNode::BinaryNode(BinaryNode {
                 priority: 1,
@@ -294,6 +345,21 @@ mod tests {
                 operation: BinaryOperation::Times,
             })),
             operation: BinaryOperation::Plus,
-        }));
+        })));
+    }
+
+    #[test]
+    fn op_then_negate() {
+        let tokens = tokenize("2*-3".to_string());
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
+            priority: 2,
+            left: Box::new(ASTNode::NumberNode(2.0)),
+            right: Box::new(ASTNode::UnaryNode(UnaryNode{
+                priority: 1,
+                child: Box::new(ASTNode::NumberNode(3.0)),
+                operation: UnaryOperation::Negate })),
+            operation: BinaryOperation::Times
+        })))
     }
 }

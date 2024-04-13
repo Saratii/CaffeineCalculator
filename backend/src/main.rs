@@ -26,10 +26,26 @@ async fn main() -> std::io::Result<()> {
         println!("Received string: {}", payload.0.text);
 
         let tokens = tokenize(payload.0.text);
-        let ast = build_ast(tokens);
-        let val = evaluate_ast(ast);
-
-        Ok(web::Json(ResponseData{message: val.to_string()}))
+        match tokens{
+            Ok(tokens) => {
+                let ast = build_ast(tokens);
+                match ast {
+                    Ok(ast) => {
+                        let val = evaluate_ast(ast);
+                        Ok(web::Json(ResponseData{message: val.unwrap().to_string()}))
+                    },
+                    Err(e) => {
+                        println!("Failed Build AST: {}", e);
+                    Ok(web::Json(ResponseData{message: e}))
+                    }, 
+                }
+                
+            },
+            Err(e) => {
+                println!("Failed Tokenize: {}", e);
+                Ok(web::Json(ResponseData{message: e}))
+            },
+        }
     }
 
     HttpServer::new(|| {

@@ -12,7 +12,7 @@ pub enum Token {
     RightParen,
 }
 
-pub fn tokenize(input: String) -> VecDeque<Token> {
+pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
     let plus_re = Regex::new(r"^\+").unwrap();
     let minus_re = Regex::new(r"^-").unwrap();
     let times_re = Regex::new(r"^\*").unwrap();
@@ -47,10 +47,13 @@ pub fn tokenize(input: String) -> VecDeque<Token> {
             let value = value.parse::<f64>().unwrap();
             tokens.push_back(Token::Number(value));
             input = &input[length..];
+        } else {
+            println!("Parse failed on: {}", input);
+            return Err(format!("Invalid Entry: {}", input))
         }
         input = input.trim();
     }
-    return tokens;
+    return Ok(tokens);
 }
 
 #[cfg(test)]
@@ -59,19 +62,19 @@ mod test {
 
     #[test]
     fn numbers_tokenize_correctly() {
-        assert_eq!(tokenize("123".to_string()), vec![Token::Number(123.0)]);
-        assert_eq!(tokenize("123.456".to_string()), vec![Token::Number(123.456)]);
+        assert_eq!(tokenize("123".to_string()).unwrap(), vec![Token::Number(123.0)]);
+        assert_eq!(tokenize("123.456".to_string()).unwrap(), vec![Token::Number(123.456)]);
     }
 
     #[test]
     fn simple_expression() {
-        assert_eq!(tokenize("1+2".to_string()), vec![Token::Number(1.0), Token::Plus, Token::Number(2.0)])
+        assert_eq!(tokenize("1+2".to_string()).unwrap(), vec![Token::Number(1.0), Token::Plus, Token::Number(2.0)])
     }
 
     #[test]
     fn symbols_tokenize_correctly() {
         let input = "+ - * / ( 123 )".to_string();
-        let input = tokenize(input);
+        let input = tokenize(input).unwrap();
         assert_eq!(input, vec![Token::Plus, Token::Minus, Token::Times, Token::Divide, Token::LeftParen, Token::Number(123.0), Token::RightParen]);
     }
 }
