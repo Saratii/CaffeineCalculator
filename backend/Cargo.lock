@@ -260,6 +260,7 @@ version = "0.1.0"
 dependencies = [
  "actix-cors",
  "actix-web",
+ "regex",
  "serde",
  "serde_json",
 ]

@@ -1,49 +1,56 @@
 body {
-  background-color: rgb(25, 28, 31);
+  background-color: rgb(17, 19, 22);
   color: white;
 }
 
+html {
+  overflow: scroll;
+  overflow-x: hidden;
+}
+
+::-webkit-scrollbar {
+  width: 0;
+  background: transparent;
+}
+
 .command-line {
-  width: 70vw;
-  height: 20vw;
   padding: 30px;
-  
-  position: absolute;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-
+  top: 10%;
+  left: 10%;
   background-color: rgb(17, 19, 22);
-  z-index: 10;
 }
 
-.command-line span{
-  margin-right: 5px;
-  font-size: 30px;
-}
-
-.command-line input[type='text'] {
+.input_text[type='text'] {
   background-color: transparent;
   color: green;
   caret-color: white;
   font-family: Verdana, Geneva, sans-serif;
-  font-size: 30px;
+  font-size: 20px;
   width: 90%;
   border: none;
   outline: none;
 }
 
-.container {
-  overflow-y: auto;
+.output_text[type='text'] {
+  background-color: transparent;
+  color: rgb(77, 15, 81);
+  caret-color: white;
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 20px;
+  width: 90%;
+  border: none;
+  outline: none;
 }
 
-.box {
-  width: 100px;
-  height: 100px;
-  color: red;
+.response_box {
   margin-top: 10px;
-  z-index: 9999;
+  border: 1px solid green;
   position: relative;
   box-shadow: 0px 0px 10px var(--clr-gray-med);
 }
 
+@keyframes blink { 50% { opacity: 0; } }
+.blinking {
+  animation: blink 1s infinite; 
+  font-size: 25px;
+}

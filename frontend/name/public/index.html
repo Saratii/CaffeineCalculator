@@ -6,52 +6,6 @@
     <title>Send Text to API</title>
 </head>
 <body>
-    <main class="container">
-      <div class="command-line", id="command-line">
-        <span>&gt;</span>
-        <input type="text" id="command-input" autofocus spellcheck="false">
-      </div>
-    </main>
-
-    <script>
-        document.getElementById("command-input").addEventListener("keydown", function(event) {
-          if (event.keyCode === 13) {
-              sendText();
-              createAnswerBox();
-          }
-        });
-        
-        const answerBox = document.getElementById("command-line")
-        function createAnswerBox() {
-          var newBox = document.createElement("div");
-          newBox.classList.add("box");
-          answerBox.appendChild(newBox);
-        }
-
-        function sendText() {
-            var inputText = document.getElementById("command-input").value;
-
-            fetch('http://127.0.0.1:8080/calculate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ text: inputText })
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Something went wrong');
-                }
-                console.log("Text sent successfully!");
-                return response.json();
-            })
-            .then(data => {
-                console.log("Received response:", data);
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    </script>
+    <div id="root"></div>
 </body>
 </html>
