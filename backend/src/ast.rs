@@ -245,6 +245,14 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
                                     operation: BinaryOperation::Exponent,
                                 })
                             }
+                            UnfinishedNode::Modulus => {
+                                ASTNode::BinaryNode(BinaryNode {
+                                    priority: 2,
+                                    left: Box::new(left),
+                                    right: Box::new(right),
+                                    operation: BinaryOperation::Modulus,
+                                })
+                            }
                             UnfinishedNode::Divide => {
                                 ASTNode::BinaryNode(BinaryNode {
                                     priority: 2,
@@ -303,7 +311,7 @@ fn apply_priority(node: ASTNode) -> ASTNode {
 #[cfg(test)]
 mod tests {
     use crate::ast::{ASTNode, BinaryNode, BinaryOperation, build_ast, UnaryNode, UnaryOperation};
-    use crate::tokens::{Token, tokenize};
+    use crate::tokens::tokenize;
 
     #[test]
     fn addition_ast() {
@@ -437,7 +445,7 @@ mod tests {
         let tokens = tokenize("10^2".to_string());
         let ast = build_ast(tokens.unwrap());
         assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
-            priority: 2,
+            priority: 3,
             left: Box::new(ASTNode::NumberNode(10.0)),
             right: Box::new(ASTNode::NumberNode(2.0)),
             operation: BinaryOperation::Exponent,
