@@ -57,7 +57,7 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
             return Ok(a);
         }
         ASTNode::UnfinishedNode(a) => {
-            return Err(format!("Oopsie Woopsie: {:?}", a).to_owned())
+            return Err(format!("Syntax Error: {:?}", a).to_owned())
         }
     }
 }

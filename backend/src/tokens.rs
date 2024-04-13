@@ -22,6 +22,9 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
     let number_re = Regex::new(r"^\d+(\.\d+)?").unwrap();
     let mut input = input.trim();
     let mut tokens = VecDeque::new();
+    if input.is_empty(){
+        return Err(" ".to_owned())
+    }
     while !input.is_empty() {
         if plus_re.is_match(input) {
             tokens.push_back(Token::Plus);

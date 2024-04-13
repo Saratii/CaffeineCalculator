@@ -55,7 +55,7 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
         match token {
             Token::Number(a) => {
                 stack.push(ASTNode::NumberNode(a));
-                combine_finished_val(&mut stack);
+                let _ = combine_finished_val(&mut stack);
             }
             Token::Plus => {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Plus))

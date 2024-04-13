@@ -4,7 +4,7 @@ import './App.css';
 function App() {
   const [response_boxes, set_response_boxes] = useState([]);
   const response_list = response_boxes.map(response_box => 
-    <div type="text" className="output_text" key={response_box.key}>{response_box.message} + {response_box.key}</div>
+    <div type="text" className="output_text" key={response_box.key}>{response_box.message}</div>
   )
   function submit(event){
     if (event.keyCode === 13) {
@@ -45,7 +45,7 @@ function App() {
         response_list
       }
         <span className="blinking">&gt;</span>
-        <input type="text" id="command-input" autoFocus={true} autoCorrect='off' onBlur={({ target }) => target.focus()} autoComplete="off" className="input_text" onKeyDown={submit}></input>
+          <input type="text" id="command-input" autoFocus={true} autoCorrect='off' onBlur={({ target }) => target.focus()} autoComplete="off" className="input_text" onKeyDown={submit}></input>
       </div>
     </main>
   )
