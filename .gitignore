@@ -1,4 +1,4 @@
-backend/target
+backend/target/
 
 #amplify-do-not-edit-begin
 amplify/\#current-cloud-backend
