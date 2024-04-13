@@ -3,14 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My gay App</title>
+    <title>Send Text to API</title>
 </head>
 <body>
     <div id="root"></div>
-    <!-- This is your root DOM node where React will render your components -->
     
     <input type="text" id="myTextBox" placeholder="Enter your text here">
-    <!-- This is the text input field -->
+    <button onclick="sendText()">Send</button>
     
+    <script>
+        function sendText() {
+            var inputText = document.getElementById("myTextBox").value;
+
+            fetch('http://127.0.0.1:8080/calculate', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ text: inputText })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Something went wrong');
+                }
+                console.log("Text sent successfully!");
+                return response.json();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
 </body>
 </html>
