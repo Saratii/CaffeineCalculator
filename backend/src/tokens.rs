@@ -8,10 +8,10 @@ pub enum Token {
     Minus,
     Times,
     Divide,
-    LeftParen,
-    RightParen,
     Modulus,
     Exponent,
+    LeftParen,
+    RightParen,
 }
 
 pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
@@ -19,6 +19,8 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
     let minus_re = Regex::new(r"^-").unwrap();
     let times_re = Regex::new(r"^\*").unwrap();
     let divide_re = Regex::new(r"^/").unwrap();
+    let modulus_re = Regex::new(r"^\%").unwrap();
+    let exponent_re = Regex::new(r"^\^").unwrap();
     let left_paren_re = Regex::new(r"^\(").unwrap();
     let right_paren_re = Regex::new(r"^\)").unwrap();
     let number_re = Regex::new(r"^\d+(\.\d+)?").unwrap();

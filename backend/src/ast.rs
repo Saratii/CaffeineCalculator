@@ -46,10 +46,10 @@ pub enum UnfinishedNode {
     Minus,
     Times,
     Divide,
-    LeftParen,
-    Negate,
     Modulus,
     Exponent,
+    LeftParen,
+    Negate,
 }
 
 pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
@@ -441,6 +441,19 @@ mod tests {
             left: Box::new(ASTNode::NumberNode(10.0)),
             right: Box::new(ASTNode::NumberNode(2.0)),
             operation: BinaryOperation::Exponent,
+        })));
+    }
+
+    #[test]
+
+    fn modulus_ast() {
+        let tokens = tokenize("10%5".to_string());
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
+            priority: 2,
+            left: Box::new(ASTNode::NumberNode(10.0)),
+            right: Box::new(ASTNode::NumberNode(5.0)),
+            operation: BinaryOperation::Modulus,
         })));
     }
 }
