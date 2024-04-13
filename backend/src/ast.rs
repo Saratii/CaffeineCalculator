@@ -31,6 +31,7 @@ pub enum BinaryOperation {
     Times,
     Divide,
     Modulus,
+    Exponent,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -46,6 +47,7 @@ pub enum UnfinishedNode {
     Times,
     Divide,
     Modulus,
+    Exponent,
     LeftParen,
     Negate,
 }
@@ -84,6 +86,9 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
             }
             Token::Modulus => {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Modulus))
+            }
+            Token::Exponent => {
+                stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Exponent))
             }
             Token::LeftParen => {
                 if stack.len() > 0{
@@ -212,6 +217,14 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String>{ //unfin
                                 left: Box::new(left),
                                 right: Box::new(right),
                                 operation: BinaryOperation::Modulus,
+                            })
+                        }
+                        UnfinishedNode::Exponent => {
+                            ASTNode::BinaryNode(BinaryNode {
+                                priority: 3,
+                                left: Box::new(left),
+                                right: Box::new(right),
+                                operation: BinaryOperation::Exponent,
                             })
                         }
                         _ => {
@@ -389,5 +402,16 @@ mod tests {
         })));
     }
 
+    #[test]
+    fn exponent_ast() {
+        let tokens = tokenize("10^2".to_string());
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
+            priority: 2,
+            left: Box::new(ASTNode::NumberNode(10.0)),
+            right: Box::new(ASTNode::NumberNode(2.0)),
+            operation: BinaryOperation::Exponent,
+        })));
+    }
 
 }
