@@ -61,18 +61,21 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Plus))
             }
             Token::Minus => {
-                let pred = stack.pop().unwrap();
-                match pred{
-                    ASTNode::UnfinishedNode(_) => {
-                        stack.push(pred);
-                        stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Negate))
-                    },
-                    _ => {
-                        stack.push(pred);
-                        stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Minus))
+                if stack.len() > 0 {
+                    let pred = stack.pop().unwrap();
+                    match pred{
+                        ASTNode::UnfinishedNode(_) => {
+                            stack.push(pred);
+                            stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Negate))
+                        },
+                        _ => {
+                            stack.push(pred);
+                            stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Minus))
+                        }
                     }
+                } else {
+                    stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Negate));
                 }
-                
             }
             Token::Times => {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Times))
@@ -140,7 +143,7 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
     Ok(stack.pop().unwrap())
 }
 
-fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String>{ //unfinished, need to combine negatives 2*-3 
+fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
     if stack.len() == 1 {
         return Ok(())
     }
@@ -153,59 +156,91 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String>{ //unfin
             Ok(())
         }
         ASTNode::UnfinishedNode(op) => {
-            let left = stack.pop().unwrap();
-            match left {
-                ASTNode::UnfinishedNode(_) => {
-                    match op {
-                        UnfinishedNode::Minus => {
-                            stack.push(left);
-                            stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Negate));
-                            Ok(())
-                        },
-                        _ => {
-                            return Err(format!("Invalid sequence: {:?}", stack))
-                        }
+            if stack.len() == 0 {
+                match op {
+                    UnfinishedNode::Negate => {
+                        stack.push(ASTNode::UnaryNode(UnaryNode {
+                            priority: 9,
+                            child: Box::new(right),
+                            operation: UnaryOperation::Negate,
+                        }));
+                        Ok(())
+                    }
+                    UnfinishedNode::Plus => {
+                        stack.push(right);
+                        Ok(())
+                    }
+                    _ => {
+                        Err(format!("Invalid sequence: {:?}", stack))
                     }
                 }
-                _ => {
-                    stack.push(apply_priority(match op {
-                        UnfinishedNode::Plus => {
-                            ASTNode::BinaryNode(BinaryNode {
-                                priority: 1,
-                                left: Box::new(left),
-                                right: Box::new(right),
-                                operation: BinaryOperation::Plus,
-                            })
+            } else {
+                let left = stack.pop().unwrap();
+                match left {
+                    ASTNode::UnfinishedNode(_) => {
+                        match op {
+                            UnfinishedNode::Minus => {
+                                stack.push(left);
+                                stack.push(ASTNode::UnaryNode(UnaryNode {
+                                    priority: 9,
+                                    child: Box::new(right),
+                                    operation: UnaryOperation::Negate
+                                }));
+                            },
+                            UnfinishedNode::Negate => {
+                                stack.push(left);
+                                stack.push(ASTNode::UnaryNode(UnaryNode {
+                                    priority: 9,
+                                    child: Box::new(right),
+                                    operation: UnaryOperation::Negate
+                                }));
+                            },
+                            _ => {
+                                return Err(format!("Invalid sequence: {:?}", stack))
+                            }
                         }
-                        UnfinishedNode::Minus => {
-                            ASTNode::BinaryNode(BinaryNode {
-                                priority: 1,
-                                left: Box::new(left),
-                                right: Box::new(right),
-                                operation: BinaryOperation::Minus,
-                            })
-                        }
-                        UnfinishedNode::Times => {
-                            ASTNode::BinaryNode(BinaryNode {
-                                priority: 2,
-                                left: Box::new(left),
-                                right: Box::new(right),
-                                operation: BinaryOperation::Times,
-                            })
-                        }
-                        UnfinishedNode::Divide => {
-                            ASTNode::BinaryNode(BinaryNode {
-                                priority: 2,
-                                left: Box::new(left),
-                                right: Box::new(right),
-                                operation: BinaryOperation::Divide,
-                            })
-                        }
-                        _ => {
-                            panic!();
-                        }
-                    }));
-                    return combine_finished_val(stack);
+                        return combine_finished_val(stack);
+                    }
+                    _ => {
+                        stack.push(apply_priority(match op {
+                            UnfinishedNode::Plus => {
+                                ASTNode::BinaryNode(BinaryNode {
+                                    priority: 1,
+                                    left: Box::new(left),
+                                    right: Box::new(right),
+                                    operation: BinaryOperation::Plus,
+                                })
+                            }
+                            UnfinishedNode::Minus => {
+                                ASTNode::BinaryNode(BinaryNode {
+                                    priority: 1,
+                                    left: Box::new(left),
+                                    right: Box::new(right),
+                                    operation: BinaryOperation::Minus,
+                                })
+                            }
+                            UnfinishedNode::Times => {
+                                ASTNode::BinaryNode(BinaryNode {
+                                    priority: 2,
+                                    left: Box::new(left),
+                                    right: Box::new(right),
+                                    operation: BinaryOperation::Times,
+                                })
+                            }
+                            UnfinishedNode::Divide => {
+                                ASTNode::BinaryNode(BinaryNode {
+                                    priority: 2,
+                                    left: Box::new(left),
+                                    right: Box::new(right),
+                                    operation: BinaryOperation::Divide,
+                                })
+                            }
+                            _ => {
+                                panic!();
+                            }
+                        }));
+                        return combine_finished_val(stack);
+                    }
                 }
             }
         }
@@ -250,7 +285,7 @@ fn apply_priority(node: ASTNode) -> ASTNode {
 #[cfg(test)]
 mod tests {
     use crate::ast::{ASTNode, BinaryNode, BinaryOperation, build_ast, UnaryNode, UnaryOperation};
-    use crate::tokens::tokenize;
+    use crate::tokens::{Token, tokenize};
 
     #[test]
     fn addition_ast() {
@@ -350,16 +385,32 @@ mod tests {
 
     #[test]
     fn op_then_negate() {
-        let tokens = tokenize("2*-3".to_string());
-        let ast = build_ast(tokens.unwrap());
-        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
+        let input = build_ast(tokenize("-2".to_string()).unwrap()).unwrap();
+        assert_eq!(input, ASTNode::UnaryNode(UnaryNode {
+            priority: 9,
+            child: Box::new(ASTNode::NumberNode(2.0)),
+            operation: UnaryOperation::Negate,
+        }));
+        let input = build_ast(tokenize("--2".to_string()).unwrap()).unwrap();
+        assert_eq!(input, ASTNode::UnaryNode(UnaryNode {
+            priority: 9,
+            child: Box::new(ASTNode::UnaryNode(UnaryNode {
+                priority: 9,
+                child: Box::new(ASTNode::NumberNode(2.0)),
+                operation: UnaryOperation::Negate,
+            })),
+            operation: UnaryOperation::Negate,
+        }));
+        let input = build_ast(tokenize("3*-2".to_string()).unwrap()).unwrap();
+        assert_eq!(input, ASTNode::BinaryNode(BinaryNode {
             priority: 2,
-            left: Box::new(ASTNode::NumberNode(2.0)),
-            right: Box::new(ASTNode::UnaryNode(UnaryNode{
-                priority: 1,
-                child: Box::new(ASTNode::NumberNode(3.0)),
-                operation: UnaryOperation::Negate })),
-            operation: BinaryOperation::Times
-        })))
+            left: Box::new(ASTNode::NumberNode(3.0)),
+            right: Box::new(ASTNode::UnaryNode(UnaryNode {
+                priority: 9,
+                child: Box::new(ASTNode::NumberNode(2.0)),
+                operation: UnaryOperation::Negate,
+            })),
+            operation: BinaryOperation::Times,
+        }));
     }
 }

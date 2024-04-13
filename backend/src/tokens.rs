@@ -80,4 +80,13 @@ mod test {
         let input = tokenize(input).unwrap();
         assert_eq!(input, vec![Token::Plus, Token::Minus, Token::Times, Token::Divide, Token::LeftParen, Token::Number(123.0), Token::RightParen]);
     }
+    #[test]
+    fn negatives_tokenize_correctly() {
+        let input = tokenize("-2".to_string()).unwrap();
+        assert_eq!(input, vec![Token::Minus, Token::Number(2.0)]);
+        let input = tokenize("--2".to_string()).unwrap();
+        assert_eq!(input, vec![Token::Minus, Token::Minus, Token::Number(2.0)]);
+        let input = tokenize("3*-2".to_string()).unwrap();
+        assert_eq!(input, vec![Token::Number(3.0), Token::Times, Token::Minus, Token::Number(2.0)]);
+    }
 }
