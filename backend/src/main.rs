@@ -1,6 +1,7 @@
 mod tokens;
 mod ast;
 mod eval;
+mod math;
 
 use actix_cors::Cors;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder, Error};
@@ -43,7 +44,7 @@ async fn main() -> std::io::Result<()> {
                             Err(e) => {
                                 println!("Failed Eval: {}", e);
                                 println!("Responding with: {}", e);
-                                Ok(web::Json(ResponseData{message: e}))
+                                Ok(web::Json(ResponseData{message: payload.0.text + ": " + &e}))
                             },
                         }
                         

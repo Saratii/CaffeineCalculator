@@ -1,4 +1,4 @@
-use crate::ast::{ASTNode, BinaryOperation, UnaryOperation};
+use crate::{ast::{ASTNode, BinaryOperation, UnaryOperation}, math::{factorial, is_positive_integer}};
 
 pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
     match ast {
@@ -188,6 +188,49 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
                     match evaluate_ast(a.inputs[0].clone()) {
                         Ok(a) => {
                             Ok(1./a.sin())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "ln" {
+                if a.inputs.len() > 1{
+                    return Err("ln takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(a.ln())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "abs" {
+                if a.inputs.len() > 1{
+                    return Err("abs takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(a.abs())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "factorial" {
+                if a.inputs.len() > 1{
+                    return Err("factorial takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            if is_positive_integer(a){
+                                return Ok(factorial(a));
+                            } else {
+                                return Err("factorial takes positive integers moron".to_string())
+                            }
                         }
                         Err(e) => {
                             return Err(format!("Syntax Error: {:?}", e));
