@@ -370,7 +370,7 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
             Ok(())
         }
         _ => {
-            panic!();
+            return Err("Syntax Error".to_string())
         }
     }
 }

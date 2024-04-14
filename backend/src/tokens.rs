@@ -98,7 +98,7 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
             tokens.push_back(Token::Number(value));
             input = &input[length..];
         } else {
-            return Err(format!("Invalid Entry: {}", input))
+            return Err(format!("Syntax Error: {}", input))
         }
         input = input.trim();
     }
