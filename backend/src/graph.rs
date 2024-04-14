@@ -12,7 +12,7 @@ pub struct Point {
 
 impl Display for Point {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        return f.write_str(&format!("({},{})", self.x, self.y));
+        return f.write_str(&format!("{{x:{},y:{}}}", self.x, self.y));
     }
 }
 
