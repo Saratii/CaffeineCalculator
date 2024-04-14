@@ -10,7 +10,7 @@ function App() {
   const [user_inputs, set_user_inputs] = useState([]);
   const [user_input_index, set_user_input_index] = useState([]);
   const response_list = response_boxes.map(response_box =>
-      <div type="text" className="output_text" key={response_box.key}>{response_box.message}</div>
+      <pre type="text" className="output_text" key={response_box.key}>{response_box.message}</pre>
   );
 
     function submit(event){

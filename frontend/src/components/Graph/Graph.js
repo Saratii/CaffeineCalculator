@@ -58,14 +58,12 @@ class Graph extends Component {
            }]
        };
 
-
        return (
-            <div style={{ width: '500px', height: '300px', padding: '40px'}}>
+            <div style={{ width: '900px', height: '600px', padding: '00px'}}>
                <CanvasJSChart options={options} />
             </div>
        );
    }
 }
-
 
 export default Graph;

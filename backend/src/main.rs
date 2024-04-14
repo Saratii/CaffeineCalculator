@@ -32,8 +32,8 @@ async fn main() -> std::io::Result<()> {
         match tokens{
             Ok(mut tokens) => {
                 if tokens.len() == 1 && tokens[0] == Token::Help {
-                    println!("Help\nSupports Math Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t) csc(t) cot(n)\nStatistics: sum(n1, n2) avg(n1, n2) std(n1, n2)\nOther: ln(t) factorial(n)");
-                    return Ok(web::Json(ResponseData{message: "Help@Supports Math Input: 3+4(2 + 9)*(-1)^3@Trigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t) csc(t) cot(n)@Statistics: median(n1, n2) sum(n1, n2) avg(n1, n2) std(n1, n2) max(n1, n2) min(n1, n2)@Other: ln(t) factorial(n)".to_string()}));
+                    println!("Help\nSupports Math Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t) csc(t) cot(n)\nStatistics: sum(n1, n2) avg(n1, n2) std(n1, n2)\nGraphing: graph(y=x^3)\nGraph must have y on left and x on right Other: ln(t) factorial(n)");
+                    return Ok(web::Json(ResponseData{message: "Help\nMath Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t)\ncsc(t) cot(n)\nStatistics: median(n1, n2) sum(n1, n2) avg(n1, n2)\nstd(n1, n2) max(n1, n2) min(n1, n2)\nGraph must have y on left and x on right\nOther: ln(t) factorial(n)".to_string()}));
                 } else if tokens.len() > 0 && tokens[0] == Token::Graph {
                     tokens.pop_front();
                     tokens.pop_back();
