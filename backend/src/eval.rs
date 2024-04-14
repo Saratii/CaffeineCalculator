@@ -176,7 +176,7 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
             return Err("Syntax Error, stray comma?".to_string());
         }
         ASTNode::Variable(_) => {
-            panic!("No variables in evaluate");
+            return Err("Syntax Error".to_owned());
         }
     }
 }
