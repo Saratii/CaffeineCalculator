@@ -1,4 +1,4 @@
-use crate::{ast::{ASTNode, BinaryOperation, UnaryOperation}, math::{factorial, is_positive_integer}};
+use crate::{ast::{ASTNode, BinaryOperation, UnaryOperation}, math::{average, factorial, is_positive_integer, standard_deviation, sum}};
 
 pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
     match ast {
@@ -64,19 +64,45 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
             return Err(format!("Syntax Error: {:?}", a).to_owned())
         }
         ASTNode::FunctionCall(a) => {
-            if a.operation == "average" || a.operation == "avg" {
-                let mut total = 0.0;
+            if a.operation == "average" || a.operation == "avg" || a.operation == "mean" {
+                let mut vals = Vec::new();
                 for child in a.inputs {
                     match evaluate_ast(child) {
                         Ok(a) => {
-                            total += a;
+                            vals.push(a);
                         }
                         Err(e) => {
                             return Err(format!("Syntax Error: {:?}", e));
                         }
                     }
                 }
-                Ok(total)
+                Ok(average(&vals))
+            } else if a.operation == "std" {
+                let mut vals = Vec::new();
+                for child in a.inputs {
+                    match evaluate_ast(child) {
+                        Ok(a) => {
+                            vals.push(a);
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+                Ok(standard_deviation(&vals))
+            } else if a.operation == "sum" {
+                let mut vals = Vec::new();
+                for child in a.inputs {
+                    match evaluate_ast(child) {
+                        Ok(a) => {
+                            vals.push(a);
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+                Ok(sum(&vals))
             } else if a.operation == "sin" {
                 if a.inputs.len() > 1{
                     return Err("sin takes one arguement moron".to_string())

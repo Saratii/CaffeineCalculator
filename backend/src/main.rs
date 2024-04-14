@@ -29,8 +29,8 @@ async fn main() -> std::io::Result<()> {
         match tokens{
             Ok(tokens) => {
                 if tokens.len() == 1 && tokens[0] == Token::Help {
-                    println!("Literally Anything");
-                    return Ok(web::Json(ResponseData{message: "Literally Anything".to_string()}));
+                    println!("Help\nSupports Math Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t) csc(t) cot(n)\nStatistics: sum(n1, n2) avg(n1, n2) std(n1, n2)\nOther: ln(t) factorial(n)");
+                    return Ok(web::Json(ResponseData{message: "Help\nSupports Math Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t) csc(t) cot(n)\nStatistics: sum(n1, n2) avg(n1, n2) std(n1, n2)\nOther: ln(t) factorial(n)".to_string()}));
                 }
                 let ast = build_ast(tokens);
                 match ast {
