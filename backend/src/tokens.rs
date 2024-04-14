@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
 use regex::Regex;
+use crate::eval::FUNCTIONS;
 
 #[derive(Debug, PartialEq)]
 pub enum Token {
@@ -15,6 +16,9 @@ pub enum Token {
     FunctionCall(String),
     Comma,
     Help,
+    Graph,
+    Variable(String),
+    Equal,
 }
 
 pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
@@ -30,6 +34,9 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
     let function_re = Regex::new(r"^([a-z]+)\(").unwrap();
     let comma_re = Regex::new(r"^,").unwrap();
     let help_re = Regex::new(r"^help").unwrap();
+    let graph_re = Regex::new(r"^graph\(").unwrap();
+    let variable_re = Regex::new(r"^[a-z]+").unwrap();
+    let eq_re = Regex::new(r"^=").unwrap();
     let mut input = input.trim();
     let mut tokens = VecDeque::new();
     if input.is_empty(){
@@ -60,7 +67,7 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
         } else if right_paren_re.is_match(input) {
             tokens.push_back(Token::RightParen);
             input = &input[1..];
-        } else if function_re.is_match(input) {
+        } else if function_re.is_match(input) && FUNCTIONS.contains(&function_re.captures(input).unwrap().get(1).unwrap().as_str()) {
             let capture = function_re.captures(input).unwrap();
             let matching_word = capture.get(1).unwrap().as_str();
             tokens.push_back(Token::FunctionCall(matching_word.to_string()));
@@ -72,6 +79,17 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
         } else if help_re.is_match(input) {
             tokens.push_back(Token::Help);
             input = &input[4..];
+        } else if graph_re.is_match(input) {
+            tokens.push_back(Token::Graph);
+            input = &input[6..];
+        } else if eq_re.is_match(input) {
+            tokens.push_back(Token::Equal);
+            input = &input[1..];
+        } else if variable_re.is_match(input) {
+            let capture = variable_re.captures(input).unwrap();
+            let matching_word = capture.get(0).unwrap().as_str();
+            tokens.push_back(Token::Variable(matching_word.to_string()));
+            input = &input[matching_word.len()..];
         } else if number_re.is_match(input) {
             let value = number_re.captures(input).unwrap()[0].to_string();
             let length = value.len();
@@ -107,6 +125,7 @@ mod test {
         let input = tokenize(input).unwrap();
         assert_eq!(input, vec![Token::Plus, Token::Minus, Token::Times, Token::Divide, Token::LeftParen, Token::Number(123.0), Token::RightParen]);
     }
+
     #[test]
     fn negatives_tokenize_correctly() {
         let input = tokenize("-2".to_string()).unwrap();
@@ -129,5 +148,11 @@ mod test {
         let input = "average(1,2,3)".to_string();
         let input = tokenize(input).unwrap();
         assert_eq!(input, vec![Token::FunctionCall("average".to_string()), Token::Number(1.0), Token::Comma, Token::Number(2.0), Token::Comma, Token::Number(3.0), Token::RightParen])
+    }
+
+    #[test]
+    fn graph_tokenizes_correctly() {
+        let tokens = tokenize("graph(y=5x)".to_string()).unwrap();
+        assert_eq!(tokens, vec![Token::Graph, Token::Variable("y".to_string()), Token::Equal, Token::Number(5.0), Token::Variable("x".to_string()), Token::RightParen]);
     }
 }

@@ -1,6 +1,7 @@
 mod tokens;
 mod ast;
 mod eval;
+mod graph;
 
 use actix_cors::Cors;
 use actix_web::{web, App, HttpResponse, HttpServer, Responder, Error};
@@ -8,6 +9,7 @@ use actix_web::web::Json;
 use serde::{Deserialize, Serialize};
 use crate::ast::build_ast;
 use crate::eval::evaluate_ast;
+use crate::graph::graph;
 use crate::tokens::{Token, tokenize};
 
 #[derive(Serialize, Debug)]
@@ -26,10 +28,19 @@ async fn main() -> std::io::Result<()> {
         println!("Received string: {}", payload.0.text);
         let tokens = tokenize(payload.0.text);
         match tokens{
-            Ok(tokens) => {
+            Ok(mut tokens) => {
                 if tokens.len() == 1 && tokens[0] == Token::Help {
                     println!("Literally Anything");
-                    return Ok(web::Json(ResponseData{message: "Literally Anything".to_string()}));
+                    return Ok(web::Json(ResponseData {
+                        message: "Literally Anything".to_string()
+                    }));
+                } else if tokens.len() > 0 && tokens[0] == Token::Graph {
+                    tokens.pop_front();
+                    tokens.pop_back();
+                    let points = graph(tokens);
+                    return Ok(web::Json(ResponseData {
+                        message: points.iter().map(|x| x.to_string()).collect(),
+                    }));
                 }
                 let ast = build_ast(tokens);
                 match ast {

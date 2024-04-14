@@ -9,6 +9,7 @@ pub enum ASTNode {
     UnfinishedNode(UnfinishedNode),
     FunctionCall(FunctionCall),
     Comma,
+    Variable(String),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -106,7 +107,7 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
                 if stack.len() > 0 {
                     let pred = stack.pop().unwrap();
                     match pred.clone() {
-                        ASTNode::BinaryNode(_) | ASTNode::NumberNode(_) | ASTNode::FunctionCall(_) => {
+                        ASTNode::BinaryNode(_) | ASTNode::NumberNode(_) | ASTNode::Variable(_) | ASTNode::FunctionCall(_) => {
                             stack.push(pred);
                             stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Times));
                         },
@@ -202,6 +203,13 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
             }
             Token::Help => {
                 return Err("Don't embed help in expressions".to_string());
+            }
+            Token::Variable(a) => {
+                stack.push(ASTNode::Variable(a));
+                let _ = combine_finished_val(&mut stack);
+            }
+            Token::Equal | Token::Graph => {
+                return Err("I'll get io it".to_string());
             }
         }
     }
@@ -330,6 +338,31 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
                 }
             }
         }
+        ASTNode::NumberNode(a) => {
+            match right {
+                ASTNode::Variable(_) => {
+                    stack.push(ASTNode::BinaryNode(BinaryNode {
+                        priority: 2,
+                        left: Box::new(ASTNode::NumberNode(a)),
+                        right: Box::new(right),
+                        operation: BinaryOperation::Times,
+                    }));
+                    Ok(())
+                }
+                _ => {
+                    panic!();
+                }
+            }
+        }
+        ASTNode::BinaryNode(a) => {
+            stack.push(apply_priority(ASTNode::BinaryNode(BinaryNode {
+                priority: 2,
+                left: Box::new(ASTNode::BinaryNode(a)),
+                right: Box::new(right),
+                operation: BinaryOperation::Times,
+            })));
+            Ok(())
+        }
         _ => {
             panic!();
         }
@@ -362,7 +395,7 @@ fn apply_priority(node: ASTNode) -> ASTNode {
                 }
             }
         }
-        ASTNode::UnaryNode(_) | ASTNode::NumberNode(_) | ASTNode::UnfinishedNode(_) | ASTNode::Comma | ASTNode::FunctionCall(_) => {
+        ASTNode::UnaryNode(_) | ASTNode::NumberNode(_) | ASTNode::Variable(_) | ASTNode::UnfinishedNode(_) | ASTNode::Comma | ASTNode::FunctionCall(_) => {
             node
         }
     }
@@ -544,5 +577,32 @@ mod tests {
             inputs: children,
             operation: "average".to_string(),
         }));
+    }
+
+    #[test]
+    fn expressions_with_variables_ast() {
+        let tokens = tokenize("2x+5y-10".to_string()).unwrap();
+        let ast = build_ast(tokens).unwrap();
+        assert_eq!(ast, ASTNode::BinaryNode(BinaryNode {
+            priority: 1,
+            left: Box::new(ASTNode::BinaryNode(BinaryNode {
+                priority: 1,
+                left: Box::new(ASTNode::BinaryNode(BinaryNode {
+                    priority: 2,
+                    left: Box::new(ASTNode::NumberNode(2.0)),
+                    right: Box::new(ASTNode::Variable("x".to_string())),
+                    operation: BinaryOperation::Times,
+                })),
+                right: Box::new(ASTNode::BinaryNode(BinaryNode {
+                    priority: 2,
+                    left: Box::new(ASTNode::NumberNode(5.0)),
+                    right: Box::new(ASTNode::Variable("y".to_string())),
+                    operation: BinaryOperation::Times,
+                })),
+                operation: BinaryOperation::Plus,
+            })),
+            right: Box::new(ASTNode::NumberNode(10.0)),
+            operation: BinaryOperation::Minus,
+        }))
     }
 }
