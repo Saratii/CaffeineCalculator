@@ -1,4 +1,7 @@
 pub fn factorial(n: f64) -> f64 {
+    if !is_positive_integer(n){
+        return -1.
+    }
     if n == 0. {
         1.
     } else {
@@ -53,4 +56,10 @@ pub fn min(nums: &Vec<f64>) -> f64 {
         }
     }
     min
+}
+
+pub fn median(nums: &Vec<f64>) -> f64 {
+    let mut v = nums.clone();
+    v.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    v[v.len()/2]
 }

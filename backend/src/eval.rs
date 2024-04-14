@@ -1,4 +1,4 @@
-use crate::{ast::{ASTNode, BinaryOperation, FunctionCall, UnaryOperation}, math::{average, factorial, is_positive_integer, max, min, standard_deviation, sum}};
+use crate::{ast::{ASTNode, BinaryOperation, FunctionCall, UnaryOperation}, math::{average, factorial, max, median, min, standard_deviation, sum}};
 
 pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
     match ast {
@@ -90,6 +90,19 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
                     }
                 }
                 Ok(standard_deviation(&vals))
+            } else if a.operation == "median" {
+                let mut vals = Vec::new();
+                for child in a.inputs {
+                    match evaluate_ast(child) {
+                        Ok(a) => {
+                            vals.push(a);
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+                Ok(median(&vals))
             } else if a.operation == "min" {
                 let mut vals = Vec::new();
                 for child in a.inputs {
