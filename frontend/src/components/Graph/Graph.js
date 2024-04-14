@@ -7,7 +7,7 @@ const CanvasJSChart = CanvasJSReact.CanvasJSChart;
 
 class Graph extends Component {
    render() {
-        let { minX, maxX, minY, maxY, dataPoints } = this.props;
+        let { funct, minX, maxX, minY, maxY, dataPoints } = this.props;
         if (maxX === 0) { 
             maxX = 10;
         }
@@ -21,6 +21,11 @@ class Graph extends Component {
            interactivityEnabled: false,
            zoomEnabled: true,
            backgroundColor: "rgba(80, 0, 0, 0.2)",
+           title: {
+                text: String(funct),
+                fontColor: "red",
+                fontFamily: "Verdana, Geneva, sans-serif"
+           },
            axisX: {
                crosshair: {
                    enabled: true,
