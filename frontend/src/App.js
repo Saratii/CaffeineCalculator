@@ -17,8 +17,8 @@ function App() {
     }
 
     function createAnswerBox(data) {
-        if (data.message.indexOf("),(") > -1) {
-            set_graph_points(JSON.parse(data.message));
+        if (data.message.indexOf("},{") > -1) {
+            set_graph_points(JSON.parse("[" + data.message + "]"));
         } else {
             data.key = response_boxes.length;
             set_response_boxes(response_boxes.concat(data));
