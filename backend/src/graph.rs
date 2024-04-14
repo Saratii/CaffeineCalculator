@@ -301,9 +301,6 @@ fn reduce_ast(node: &ASTNode) -> Result<ASTNode, String> {
                 (ASTNode::NumberNode(left), ASTNode::NumberNode(right), BinaryOperation::Modulus) => {
                     return Ok(ASTNode::NumberNode(left % right));
                 }
-                (ASTNode::NumberNode(_left), ASTNode::NumberNode(_right), _) => {
-                    panic!();
-                }
                 (left, right, b) => {
                     return Ok(ASTNode::BinaryNode(BinaryNode {
                         priority: a.priority,
