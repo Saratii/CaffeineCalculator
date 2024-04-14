@@ -64,7 +64,7 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
             return Err(format!("Syntax Error: {:?}", a).to_owned())
         }
         ASTNode::FunctionCall(a) => {
-            if a.operation == "average" {
+            if a.operation == "average" || a.operation == "avg" {
                 let mut total = 0.0;
                 for child in a.inputs {
                     match evaluate_ast(child) {
@@ -77,6 +77,123 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
                     }
                 }
                 Ok(total)
+            } else if a.operation == "sin" {
+                if a.inputs.len() > 1{
+                    return Err("sin takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(a.sin())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "cos" {
+                if a.inputs.len() > 1{
+                    return Err("cos takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(a.cos())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "tan" {
+                if a.inputs.len() > 1{
+                    return Err("tan takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(a.tan())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "asin" {
+                if a.inputs.len() > 1{
+                    return Err("asin takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(a.asin())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "acos" {
+                if a.inputs.len() > 1{
+                    return Err("acos takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(a.acos())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "atan" {
+                if a.inputs.len() > 1{
+                    return Err("atan takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(a.atan())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "sec" {
+                if a.inputs.len() > 1{
+                    return Err("sec takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(1./a.cos())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "cot" {
+                if a.inputs.len() > 1{
+                    return Err("cot takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(1./a.tan())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
+            } else if a.operation == "csc" {
+                if a.inputs.len() > 1{
+                    return Err("csc takes one arguement moron".to_string())
+                } else {
+                    match evaluate_ast(a.inputs[0].clone()) {
+                        Ok(a) => {
+                            Ok(1./a.sec())
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
+                        }
+                    }
+                }
             } else {
                 return Err(format!("Unknown function: {:?}", a.operation));
             }
