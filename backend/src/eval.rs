@@ -1,5 +1,7 @@
 use crate::{ast::{ASTNode, BinaryOperation, FunctionCall, UnaryOperation}, math::{average, factorial, max, median, min, standard_deviation, sum}};
 
+pub const FUNCTIONS: &'static [&'static str] = &["average", "sin", "cos", "tan", "asin", "acos", "atan", "sec", "csc", "cot", "ln", "factorial", "mean", "median", "mode", "average", "avg", "abs", "max", "min", "std"];
+
 pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
     match ast {
         ASTNode::BinaryNode(a) => {
@@ -173,6 +175,28 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
         ASTNode::Comma => {
             return Err("Syntax Error, stray comma?".to_string());
         }
+        ASTNode::Variable(_) => {
+            panic!("No variables in evaluate");
+        }
+    }
+}
+
+pub fn evaluate_function_call(function_call: FunctionCall) -> Result<f64, String> {
+    if function_call.operation == "average" {
+        let mut total = 0.0;
+        for child in function_call.inputs {
+            match evaluate_ast(child) {
+                Ok(a) => {
+                    total += a;
+                }
+                Err(e) => {
+                    return Err(format!("Syntax Error: {:?}", e));
+                }
+            }
+        }
+        Ok(total)
+    } else {
+        return Err(format!("Unknown function: {:?}", function_call.operation));
     }
 }
 
