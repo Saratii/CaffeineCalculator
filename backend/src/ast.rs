@@ -7,7 +7,7 @@ pub enum ASTNode {
     UnaryNode(UnaryNode),
     NumberNode(f64),
     UnfinishedNode(UnfinishedNode),
-    VariableInputNode(VariableInputNode),
+    FunctionCall(FunctionCall),
     Comma,
 }
 
@@ -27,9 +27,9 @@ pub struct UnaryNode {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct VariableInputNode {
-    pub(crate) children: VecDeque<ASTNode>,
-    pub(crate) operation: VariableInputOperation,
+pub struct FunctionCall {
+    pub inputs: VecDeque<ASTNode>,
+    pub operation: String,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -49,11 +49,6 @@ pub enum UnaryOperation {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum VariableInputOperation {
-    Average
-}
-
-#[derive(Clone, Debug, PartialEq)]
 pub enum UnfinishedNode {
     Plus,
     Minus,
@@ -63,7 +58,7 @@ pub enum UnfinishedNode {
     Exponent,
     LeftParen,
     Negate,
-    Average,
+    FunctionCall(String),
 }
 
 pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
@@ -111,7 +106,7 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
                 if stack.len() > 0 {
                     let pred = stack.pop().unwrap();
                     match pred.clone() {
-                        ASTNode::BinaryNode(_) | ASTNode::NumberNode(_) | ASTNode::VariableInputNode(_) => {
+                        ASTNode::BinaryNode(_) | ASTNode::NumberNode(_) | ASTNode::FunctionCall(_) => {
                             stack.push(pred);
                             stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Times));
                         },
@@ -161,11 +156,11 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
                                     ASTNode::Comma => {
                                         children.push_back(val);
                                     }
-                                    ASTNode::UnfinishedNode(UnfinishedNode::Average) => {
+                                    ASTNode::UnfinishedNode(UnfinishedNode::FunctionCall(a)) => {
                                         children.push_back(val);
-                                        stack.push(ASTNode::VariableInputNode(VariableInputNode {
-                                            children,
-                                            operation: VariableInputOperation::Average,
+                                        stack.push(ASTNode::FunctionCall(FunctionCall {
+                                            inputs: children,
+                                            operation: a,
                                         }));
                                         match combine_finished_val(&mut stack) {
                                             Ok(_) => {}
@@ -181,12 +176,12 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
                                 }
                             }
                         }
-                        (val, ASTNode::UnfinishedNode(UnfinishedNode::Average)) => {
+                        (val, ASTNode::UnfinishedNode(UnfinishedNode::FunctionCall(a))) => {
                             let mut children = VecDeque::new();
                             children.push_back(val);
-                            stack.push(ASTNode::VariableInputNode(VariableInputNode {
-                                children,
-                                operation: VariableInputOperation::Average,
+                            stack.push(ASTNode::FunctionCall(FunctionCall {
+                                inputs: children,
+                                operation: a,
                             }));
                         }
                         _ => {
@@ -202,8 +197,8 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
             Token::Comma => {
                 stack.push(ASTNode::Comma);
             }
-            Token::Average => {
-                stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Average));
+            Token::FunctionCall(a) => {
+                stack.push(ASTNode::UnfinishedNode(UnfinishedNode::FunctionCall(a)));
             }
         }
     }
@@ -233,8 +228,8 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
                         }));
                         Ok(())
                     }
-                    UnfinishedNode::Average => {
-                        stack.push(ASTNode::UnfinishedNode(op));
+                    UnfinishedNode::FunctionCall(a) => {
+                        stack.push(ASTNode::UnfinishedNode(UnfinishedNode::FunctionCall(a)));
                         stack.push(right);
                         Ok(())
                     }
@@ -364,7 +359,7 @@ fn apply_priority(node: ASTNode) -> ASTNode {
                 }
             }
         }
-        ASTNode::UnaryNode(_) | ASTNode::NumberNode(_) | ASTNode::UnfinishedNode(_) | ASTNode::Comma | ASTNode::VariableInputNode(_) => {
+        ASTNode::UnaryNode(_) | ASTNode::NumberNode(_) | ASTNode::UnfinishedNode(_) | ASTNode::Comma | ASTNode::FunctionCall(_) => {
             node
         }
     }
@@ -373,7 +368,7 @@ fn apply_priority(node: ASTNode) -> ASTNode {
 #[cfg(test)]
 mod tests {
     use std::collections::VecDeque;
-    use crate::ast::{ASTNode, BinaryNode, BinaryOperation, build_ast, UnaryNode, UnaryOperation, VariableInputNode, VariableInputOperation};
+    use crate::ast::{ASTNode, BinaryNode, BinaryOperation, build_ast, FunctionCall, UnaryNode, UnaryOperation};
     use crate::tokens::tokenize;
 
     #[test]
@@ -533,18 +528,18 @@ mod tests {
         let ast = build_ast(tokens).unwrap();
         let mut children = VecDeque::new();
         children.push_front(ASTNode::NumberNode(1.0));
-        assert_eq!(ast, ASTNode::VariableInputNode(VariableInputNode {
-            children,
-            operation: VariableInputOperation::Average,
+        assert_eq!(ast, ASTNode::FunctionCall(FunctionCall {
+            inputs: children,
+            operation: "average".to_string(),
         }));
         let ast = build_ast(tokenize("average(1,2,3)".to_string()).unwrap()).unwrap();
         let mut children = VecDeque::new();
         children.push_front(ASTNode::NumberNode(1.0));
         children.push_front(ASTNode::NumberNode(2.0));
         children.push_front(ASTNode::NumberNode(3.0));
-        assert_eq!(ast, ASTNode::VariableInputNode(VariableInputNode {
-            children,
-            operation: VariableInputOperation::Average,
+        assert_eq!(ast, ASTNode::FunctionCall(FunctionCall {
+            inputs: children,
+            operation: "average".to_string(),
         }));
     }
 }

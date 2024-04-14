@@ -24,7 +24,7 @@ struct Request {
 async fn main() -> std::io::Result<()> {
     fn receive_string(payload: Json<Request>) -> Result<impl Responder, Error> {
         println!("Received string: {}", payload.0.text);
-        let tokens = tokenize(payload.0.text.clone());
+        let tokens = tokenize(payload.0.text);
         match tokens{
             Ok(tokens) => {
                 let ast = build_ast(tokens);
@@ -34,7 +34,7 @@ async fn main() -> std::io::Result<()> {
                         match val {
                             Ok(val) => {
                                 println!("Responding with: {}", val);
-                                Ok(web::Json(ResponseData{message: payload.0.text + " = "+ &val.to_string()}))
+                                Ok(web::Json(ResponseData{message: val.to_string()}))
                             },
                             Err(e) => {
                                 println!("Failed Eval: {}", e);

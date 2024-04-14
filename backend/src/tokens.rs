@@ -12,7 +12,7 @@ pub enum Token {
     Exponent,
     LeftParen,
     RightParen,
-    Average,
+    FunctionCall(String),
     Comma,
 }
 
@@ -26,7 +26,7 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
     let number_re = Regex::new(r"^\d+(\.\d+)?").unwrap();
     let modulus_re = Regex::new(r"^\%").unwrap();
     let exponent_re = Regex::new(r"^\^").unwrap();
-    let average_re = Regex::new(r"^average\(").unwrap();
+    let function_re = Regex::new(r"^([a-z]+)\(").unwrap();
     let comma_re = Regex::new(r"^,").unwrap();
     let mut input = input.trim();
     let mut tokens = VecDeque::new();
@@ -58,9 +58,12 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
         } else if right_paren_re.is_match(input) {
             tokens.push_back(Token::RightParen);
             input = &input[1..];
-        } else if average_re.is_match(input) {
-            tokens.push_back(Token::Average);
-            input = &input[8..];
+        } else if function_re.is_match(input) {
+            let capture = function_re.captures(input).unwrap();
+            let matching_word = capture.get(1).unwrap().as_str();
+            tokens.push_back(Token::FunctionCall(matching_word.to_string()));
+            let length = matching_word.len() + 1;
+            input = &input[length..];
         } else if comma_re.is_match(input) {
             tokens.push_back(Token::Comma);
             input = &input[1..];
@@ -121,6 +124,6 @@ mod test {
     fn average_test() {
         let input = "average(1,2,3)".to_string();
         let input = tokenize(input).unwrap();
-        assert_eq!(input, vec![Token::Average, Token::Number(1.0), Token::Comma, Token::Number(2.0), Token::Comma, Token::Number(3.0), Token::RightParen])
+        assert_eq!(input, vec![Token::FunctionCall("average".to_string()), Token::Number(1.0), Token::Comma, Token::Number(2.0), Token::Comma, Token::Number(3.0), Token::RightParen])
     }
 }

@@ -1,4 +1,4 @@
-use crate::ast::{ASTNode, BinaryOperation, UnaryOperation, VariableInputNode, VariableInputOperation};
+use crate::ast::{ASTNode, BinaryOperation, UnaryOperation};
 
 pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
     match ast {
@@ -20,7 +20,7 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
                         }
                         BinaryOperation::Exponent => {
                             return Ok(left_result.powf(right_result));
-                        }                 
+                        }
                         BinaryOperation::Modulus => todo!(),
                     }
                 }
@@ -37,7 +37,7 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
                     return Err(e)
                 },
             }
-            
+
         }
         ASTNode::UnaryNode(a) => {
             match evaluate_ast(*a.child){
@@ -45,7 +45,7 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
                     match a.operation {
                         UnaryOperation::Negate => {
                             return Ok(-1.0 * child);
-                        } 
+                        }
                         UnaryOperation::Parens => {
                             return Ok(child)
                         }
@@ -63,22 +63,22 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
         ASTNode::UnfinishedNode(a) => {
             return Err(format!("Syntax Error: {:?}", a).to_owned())
         }
-        ASTNode::VariableInputNode(a) => {
-            return match a.operation {
-                VariableInputOperation::Average => {
-                    let mut total = 0.0;
-                    for child in a.children {
-                        match evaluate_ast(child) {
-                            Ok(a) => {
-                                total += a;
-                            }
-                            Err(e) => {
-                                return Err(format!("Syntax Error: {:?}", e));
-                            }
+        ASTNode::FunctionCall(a) => {
+            if a.operation == "average" {
+                let mut total = 0.0;
+                for child in a.inputs {
+                    match evaluate_ast(child) {
+                        Ok(a) => {
+                            total += a;
+                        }
+                        Err(e) => {
+                            return Err(format!("Syntax Error: {:?}", e));
                         }
                     }
-                    Ok(total)
                 }
+                Ok(total)
+            } else {
+                return Err(format!("Unknown function: {:?}", a.operation));
             }
         }
         ASTNode::Comma => {
