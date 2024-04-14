@@ -12,6 +12,8 @@ pub enum Token {
     Exponent,
     LeftParen,
     RightParen,
+    LessThan,
+    GreaterThan,
 }
 
 pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
@@ -54,6 +56,13 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
         } else if right_paren_re.is_match(input) {
             tokens.push_back(Token::RightParen);
             input = &input[1..];
+        } else if input.starts_with(">") {
+            tokens.push_back(Token::GreaterThan);
+            input = &input[1..];
+        } else if input.starts_with("<") {
+            tokens.push_back(Token::LessThan);
+            input = &input[1..];
+                       
         } else if number_re.is_match(input) {
             let value = number_re.captures(input).unwrap()[0].to_string();
             let length = value.len();
@@ -92,7 +101,6 @@ mod test {
     }
 
     #[test]
-
     fn modulus_test() {
         let input = "5%5".to_string();
         let input = tokenize(input).unwrap();
@@ -105,5 +113,19 @@ mod test {
         let input = "5^5".to_string();
         let input = tokenize(input).unwrap();
         assert_eq!(input, vec![Token::Number(5.0), Token::Exponent, Token::Number(5.0)])
+    }
+
+    #[test]
+    fn gt_test() {
+        let input = "10>5".to_string();
+        let input = tokenize(input).unwrap();
+        assert_eq!(input, vec![Token::Number(10.0), Token::GreaterThan, Token::Number(5.0)])
+    }
+
+    #[test]
+    fn lt_test() {
+        let input = "10<5".to_string();
+        let input = tokenize(input).unwrap();
+        assert_eq!(input, vec![Token::Number(10.0), Token::LessThan, Token::Number(5.0)])
     }
 }

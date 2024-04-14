@@ -31,18 +31,8 @@ async fn main() -> std::io::Result<()> {
                 match ast {
                     Ok(ast) => {
                         let val = evaluate_ast(ast);
-                        match val {
-                            Ok(val) => {
-                                println!("Responding with: {}", val);
-                                Ok(web::Json(ResponseData{message: val.to_string()}))
-                            },
-                            Err(e) => {
-                                println!("Failed Eval: {}", e);
-                                println!("Responding with: {}", e);
-                                Ok(web::Json(ResponseData{message: e}))
-                            },
-                        }
-                        
+                        println!("Responding with: {}", val);
+                        Ok(web::Json(ResponseData{message: val.to_string()}))
                     },
                     Err(e) => {
                         println!("Failed Build AST: {}", e);

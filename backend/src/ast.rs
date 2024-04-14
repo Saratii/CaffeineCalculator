@@ -32,6 +32,8 @@ pub enum BinaryOperation {
     Divide,
     Modulus,
     Exponent,
+    LessThan,
+    GreaterThan,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -50,6 +52,8 @@ pub enum UnfinishedNode {
     Exponent,
     LeftParen,
     Negate,
+    LessThan,
+    GreaterThan,
 }
 
 pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
@@ -145,6 +149,12 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
                     }
                 }
             }
+            Token::GreaterThan => {
+                stack.push(ASTNode::UnfinishedNode(UnfinishedNode::GreaterThan))
+            }
+            Token::LessThan => {
+                stack.push(ASTNode::UnfinishedNode(UnfinishedNode::LessThan))
+            }
         }
     }
     Ok(stack.pop().unwrap())
@@ -225,6 +235,22 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String>{ //unfin
                                 left: Box::new(left),
                                 right: Box::new(right),
                                 operation: BinaryOperation::Exponent,
+                            })
+                        }
+                        UnfinishedNode::GreaterThan => {
+                            ASTNode::BinaryNode(BinaryNode {
+                                priority: 0,
+                                left: Box::new(left),
+                                right: Box::new(right),
+                                operation: BinaryOperation::GreaterThan,
+                            })
+                        }
+                        UnfinishedNode::LessThan => {
+                            ASTNode::BinaryNode(BinaryNode {
+                                priority: 0,
+                                left: Box::new(left),
+                                right: Box::new(right),
+                                operation: BinaryOperation::LessThan,
                             })
                         }
                         _ => {
@@ -407,11 +433,56 @@ mod tests {
         let tokens = tokenize("10^2".to_string());
         let ast = build_ast(tokens.unwrap());
         assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
-            priority: 2,
+            priority: 3,
             left: Box::new(ASTNode::NumberNode(10.0)),
             right: Box::new(ASTNode::NumberNode(2.0)),
             operation: BinaryOperation::Exponent,
         })));
     }
+
+    #[test]
+    fn gt_ast() {
+        let tokens = tokenize("5>2".to_string());
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
+            priority: 0,
+            left: Box::new(ASTNode::NumberNode(10.0)),
+            right: Box::new(ASTNode::NumberNode(2.0)),
+            operation: BinaryOperation::GreaterThan,
+        })));
+    }
+
+    #[test]
+    fn adv_gt_ast() {
+        let tokens = tokenize("5+5>8".to_string());
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
+            priority: 0,
+            left: Box::new(
+                ASTNode::BinaryNode(BinaryNode {
+                    priority: 1,
+                    left: Box::new(ASTNode::NumberNode(5.0)),
+                    right: Box::new(ASTNode::NumberNode(5.0)),
+                    operation: BinaryOperation::Plus,
+                })
+            ),
+            right: Box::new(ASTNode::NumberNode(8.0)),
+            operation: BinaryOperation::GreaterThan,
+        })));
+    }
+
+
+    #[test]
+    fn ls_ast() {
+        let tokens = tokenize("5<2".to_string());
+        let ast = build_ast(tokens.unwrap());
+        assert_eq!(ast, Ok(ASTNode::BinaryNode(BinaryNode {
+            priority: 0,
+            left: Box::new(ASTNode::NumberNode(5.0)),
+            right: Box::new(ASTNode::NumberNode(2.0)),
+            operation: BinaryOperation::LessThan,
+        })));
+    }
+
 
 }

@@ -1,69 +1,63 @@
 use crate::ast::{ASTNode, BinaryOperation, UnaryOperation};
 
-pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
+pub fn evaluate_ast(ast: ASTNode) -> String {
     match ast {
         ASTNode::BinaryNode(a) => {
             match (evaluate_ast(*a.left), evaluate_ast(*a.right)) {
-                (Ok(left_result), Ok(right_result)) => {
+                (left_result, right_result) => {
                     match a.operation {
                         BinaryOperation::Plus => {
-                            return Ok(left_result + right_result);
+                            return (left_result.parse::<i64>().unwrap() + right_result.parse::<i64>().unwrap()).to_string();
                         }
                         BinaryOperation::Minus => {
-                            return Ok(left_result - right_result);
+                            return (left_result.parse::<i64>().unwrap() - right_result.parse::<i64>().unwrap()).to_string();
                         }
                         BinaryOperation::Times => {
-                            return Ok(left_result * right_result);
+                            return (left_result.parse::<i64>().unwrap() * right_result.parse::<i64>().unwrap()).to_string();
                         }
                         BinaryOperation::Divide => {
-                            return Ok(left_result / right_result);
+                            return (left_result.parse::<i64>().unwrap() / right_result.parse::<i64>().unwrap()).to_string();
                         }
                         BinaryOperation::Modulus => {
-                            return Ok(left_result % right_result);
+                            return (left_result.parse::<i64>().unwrap() % right_result.parse::<i64>().unwrap()).to_string();
                         }
                         BinaryOperation::Exponent => {
-                            return Ok(left_result.powf(right_result));
+                            return (left_result.parse::<u32>().unwrap().pow(right_result.parse::<u32>().unwrap())).to_string();
+                        }
+                        BinaryOperation::GreaterThan => {
+                            return (left_result.parse::<i64>().unwrap() > right_result.parse::<i64>().unwrap()).to_string();
+                        }
+                        BinaryOperation::LessThan => {
+                            return (left_result.parse::<i64>().unwrap() < right_result.parse::<i64>().unwrap()).to_string();
                         }
                     }
                 }
-                (Ok(_), Err(e)) => {
-                    println!("Error: {}", e);
-                    return Err(e);
-                },
-                (Err(e), Ok(_)) => {
-                    println!("Error: {}", e);
-                    return Err(e);
-                },
-                (Err(e), Err(e2)) => {
-                    println!("Errors: {} and {}", e, e2);
-                    return Err(e)
-                },
             }
             
         }
         ASTNode::UnaryNode(a) => {
             match evaluate_ast(*a.child){
-                Ok(child) => {
+                child => {
                     match a.operation {
                         UnaryOperation::Negate => {
-                            return Ok(-1.0 * child);
+                            return (-1.0 * child.parse::<f64>().unwrap()).to_string();
                         } 
                         UnaryOperation::Parens => {
-                            return Ok(child)
+                            return child
                         }
                     }
                 },
-                Err(e) => {
-                    println!("Error: {}", e);
-                    return Err(e)
+                _ => {
+                    println!("moron programmer");
+                    return "moron programmer".to_string()
                 },
             }
         }
         ASTNode::NumberNode(a) => {
-            return Ok(a);
+            return a.to_string();
         }
         ASTNode::UnfinishedNode(a) => {
-            return Err(format!("Syntax Error: {:?}", a).to_owned())
+            return format!("Syntax Error: {:?}", a).to_owned()
         }
     }
 }
