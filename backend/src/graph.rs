@@ -12,11 +12,11 @@ pub struct Point {
 
 impl Display for Point {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        return f.write_str(&format!("({},{}", self.x, self.y));
+        return f.write_str(&format!("({},{})", self.x, self.y));
     }
 }
 
-pub fn graph(mut tokens: VecDeque<Token>) -> Vec<Point> {
+pub fn graph(mut tokens: VecDeque<Token>) -> Result<Vec<Point>, String> {
     if *tokens.front().unwrap() == Token::Graph {
         tokens.pop_front();
     }
@@ -73,11 +73,11 @@ pub fn graph(mut tokens: VecDeque<Token>) -> Vec<Point> {
                         y: val,
                     });
                 }
-                return points;
+                return Ok(points);
             }
         }
         (_,_) => {
-            panic!()
+            return Err("Syntax Error".to_owned())
         }
     }
 }
@@ -438,6 +438,6 @@ mod tests {
                 y: i as f64,
             });
         }
-        assert_eq!(output, expected_results);
+        assert_eq!(output, Ok(expected_results));
     }
 }

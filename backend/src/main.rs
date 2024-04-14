@@ -37,9 +37,16 @@ async fn main() -> std::io::Result<()> {
                     tokens.pop_front();
                     tokens.pop_back();
                     let points = graph(tokens);
-                    return Ok(web::Json(ResponseData {
-                        message: points.iter().map(|x| x.to_string()).collect(),
-                    }));
+                    match points{
+                        Ok(points) => {
+                            return Ok(web::Json(ResponseData {
+                                message: points.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(","),
+                            }));
+                        },
+                        Err(e) => {
+                            return Ok(web::Json(ResponseData{message: payload.0.text + ": " + &e}));
+                        },
+                    }
                 }
                 let ast = build_ast(tokens);
                 match ast {

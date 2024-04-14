@@ -213,7 +213,11 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
             }
         }
     }
-    Ok(stack.pop().unwrap())
+    let a = stack.pop();
+    let _ = match a{
+        Some(b) => return Ok(b),
+        None => return Err("Syntax Error".to_owned()),
+    };
 }
 
 fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
