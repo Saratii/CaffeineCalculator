@@ -69,83 +69,17 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
         }
         ASTNode::FunctionCall(a) => {
             if a.operation == "average" || a.operation == "avg" || a.operation == "mean" {
-                let mut vals = Vec::new();
-                for child in a.inputs {
-                    match evaluate_ast(child) {
-                        Ok(a) => {
-                            vals.push(a);
-                        }
-                        Err(e) => {
-                            return Err(format!("Syntax Error: {:?}", e));
-                        }
-                    }
-                }
-                Ok(average(&vals))
+                evaluate_multi_param(a, average)
             } else if a.operation == "std" {
-                let mut vals = Vec::new();
-                for child in a.inputs {
-                    match evaluate_ast(child) {
-                        Ok(a) => {
-                            vals.push(a);
-                        }
-                        Err(e) => {
-                            return Err(format!("Syntax Error: {:?}", e));
-                        }
-                    }
-                }
-                Ok(standard_deviation(&vals))
+                evaluate_multi_param(a, standard_deviation)
             } else if a.operation == "median" {
-                let mut vals = Vec::new();
-                for child in a.inputs {
-                    match evaluate_ast(child) {
-                        Ok(a) => {
-                            vals.push(a);
-                        }
-                        Err(e) => {
-                            return Err(format!("Syntax Error: {:?}", e));
-                        }
-                    }
-                }
-                Ok(median(&vals))
+                evaluate_multi_param(a, median)
             } else if a.operation == "min" {
-                let mut vals = Vec::new();
-                for child in a.inputs {
-                    match evaluate_ast(child) {
-                        Ok(a) => {
-                            vals.push(a);
-                        }
-                        Err(e) => {
-                            return Err(format!("Syntax Error: {:?}", e));
-                        }
-                    }
-                }
-                Ok(min(&vals))
+                evaluate_multi_param(a, min)
             } else if a.operation == "max" {
-                let mut vals = Vec::new();
-                for child in a.inputs {
-                    match evaluate_ast(child) {
-                        Ok(a) => {
-                            vals.push(a);
-                        }
-                        Err(e) => {
-                            return Err(format!("Syntax Error: {:?}", e));
-                        }
-                    }
-                }
-                Ok(max(&vals))
+                evaluate_multi_param(a, max)
             } else if a.operation == "sum" {
-                let mut vals = Vec::new();
-                for child in a.inputs {
-                    match evaluate_ast(child) {
-                        Ok(a) => {
-                            vals.push(a);
-                        }
-                        Err(e) => {
-                            return Err(format!("Syntax Error: {:?}", e));
-                        }
-                    }
-                }
-                Ok(sum(&vals))
+                evaluate_multi_param(a, sum)
             } else if a.operation == "sin" {
                 evaluate_single_param(a, f64::sin)
             } else if a.operation == "cos" {
@@ -210,4 +144,19 @@ fn evaluate_single_param(a: FunctionCall, func: fn(f64) -> f64) -> Result<f64, S
         Ok(value) => Ok(func(value)),
         Err(e) => Err(format!("Syntax Error: {:?}", e)),
     }
+}
+
+fn evaluate_multi_param(a: FunctionCall, func: fn(Vec<f64>) -> f64) -> Result<f64, String>{
+    let mut vals = Vec::new();
+    for child in a.inputs {
+        match evaluate_ast(child) {
+            Ok(a) => {
+                vals.push(a);
+            }
+            Err(e) => {
+                return Err(format!("Syntax Error: {:?}", e));
+            }
+        }
+    }
+    Ok(func(vals))
 }

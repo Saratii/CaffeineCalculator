@@ -47,8 +47,8 @@ pub fn graph(mut tokens: VecDeque<Token>) -> Result<Vec<Point>, String> {
                         let _right = reduce_ast(&right);
                         panic!();
                     }
-                    Err(_) => {
-                        panic!();
+                    Err(e) => {
+                        return Err(format!("Syntax Error: {}", e))
                     }
                 }
             } else if right_variables.len() == 0 {
@@ -57,8 +57,8 @@ pub fn graph(mut tokens: VecDeque<Token>) -> Result<Vec<Point>, String> {
                         let _left = reduce_ast(&left);
                         panic!();
                     }
-                    Err(_) => {
-                        panic!();
+                    Err(e) => {
+                        return Err(format!("Syntax Error: {}", e))
                     }
                 }
             } else {

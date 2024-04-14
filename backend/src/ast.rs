@@ -133,6 +133,7 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::LeftParen))
             }
             Token::RightParen => {
+                println!("{:?}", stack);
                 if stack.len() > 1 {
                     let val = stack.pop().unwrap();
                     let left = stack.pop().unwrap();
@@ -608,5 +609,12 @@ mod tests {
             right: Box::new(ASTNode::NumberNode(10.0)),
             operation: BinaryOperation::Minus,
         }))
+    }
+
+    #[test]
+    fn one_plus_ln_parse(){
+        let tokens = tokenize("1+ln(2)".to_string()).unwrap();
+        let ast = build_ast(tokens).unwrap();
+        assert_eq!(ast, ASTNode::BinaryNode(BinaryNode{ priority: 1, left: Box::new(ASTNode::NumberNode(1.)), right: Box::new(ASTNode::FunctionCall(FunctionCall{ inputs: VecDeque::new(), operation: "ln".to_string() })), operation: BinaryOperation::Plus  }))
     }
 }

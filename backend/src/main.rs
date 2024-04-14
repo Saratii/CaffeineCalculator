@@ -32,15 +32,17 @@ async fn main() -> std::io::Result<()> {
             Ok(mut tokens) => {
                 if tokens.len() == 1 && tokens[0] == Token::Help {
                     println!("Help\nSupports Math Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t) csc(t) cot(n)\nStatistics: sum(n1, n2) avg(n1, n2) std(n1, n2)\nOther: ln(t) factorial(n)");
-                    return Ok(web::Json(ResponseData{message: "Help\nSupports Math Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t) csc(t) cot(n)\nStatistics: median(n1, n2) sum(n1, n2) avg(n1, n2) std(n1, n2) max(n1, n2) min(n1, n2)\nOther: ln(t) factorial(n)".to_string()}));
+                    return Ok(web::Json(ResponseData{message: "Help@Supports Math Input: 3+4(2 + 9)*(-1)^3@Trigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t) csc(t) cot(n)@Statistics: median(n1, n2) sum(n1, n2) avg(n1, n2) std(n1, n2) max(n1, n2) min(n1, n2)@Other: ln(t) factorial(n)".to_string()}));
                 } else if tokens.len() > 0 && tokens[0] == Token::Graph {
                     tokens.pop_front();
                     tokens.pop_back();
                     let points = graph(tokens);
                     match points{
                         Ok(points) => {
+                            let data_points = points.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
+                            println!("Responding with: {}", data_points);
                             return Ok(web::Json(ResponseData {
-                                message: points.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(","),
+                                message: data_points,
                             }));
                         },
                         Err(e) => {
