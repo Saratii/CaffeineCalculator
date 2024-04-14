@@ -74,7 +74,6 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
             tokens.push_back(Token::Number(value));
             input = &input[length..];
         } else {
-            println!("Parse failed on: {}", input);
             return Err(format!("Invalid Entry: {}", input))
         }
         input = input.trim();
