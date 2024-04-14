@@ -1,7 +1,7 @@
 body {
-  background-color: rgb(32, 35, 38);
+  background-image: radial-gradient(rgb(0, 0, 0), rgb(50,0,0));
   color: white;
-  padding: 2%;
+  padding: 3%;
  }
  
  
@@ -39,8 +39,6 @@ body {
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
- 
- 
   font-size: 14px;
   text-align: right;
   color: #f8005f;
@@ -56,7 +54,8 @@ body {
  .blackbox {
   display: flex;
   padding: 50px;
-  background-color: rgb(17, 19, 22);
+  background-color: black;
+  opacity: 0.75;
   height: 500px;
  }
  
@@ -71,10 +70,10 @@ body {
  
  .input_text[type='text'] {
   background-color: transparent;
-  color: green;
+  color: rgb(255, 7, 7);
   caret-color: white;
   font-family: Verdana, Geneva, sans-serif;
-  font-size: 20px;
+  font-size: 25px;
   width: 90%;
   border: none;
   outline: none;
@@ -82,9 +81,12 @@ body {
  
  
  .output_text[type='text'] {
-  color: rgb(172, 50, 181);
+  background: linear-gradient(to right, #e20b8c, #f84b00);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-family: Verdana, Geneva, sans-serif;
-  font-size: 20px;
+  font-size: 25px;
   border: none;
   outline: none;
   padding-top: 5px;
@@ -106,4 +108,5 @@ body {
   font-weight: bold;
   padding-right: 10px;
  }
+
  
