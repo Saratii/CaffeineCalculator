@@ -185,7 +185,7 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
                             }));
                         }
                         _ => {
-                            panic!();
+                            return Err("Syntax Error".to_string());
                         }
                     }
                     match combine_finished_val(&mut stack){

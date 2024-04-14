@@ -34,3 +34,23 @@ pub fn sum(nums: &Vec<f64>) -> f64{
     }
     sum
 }
+
+pub fn max(nums: &Vec<f64>) -> f64 {
+    let mut max = nums[0];
+    for num in nums{
+        if num > &max{
+            max = *num;
+        }
+    }
+    max
+}
+
+pub fn min(nums: &Vec<f64>) -> f64 {
+    let mut min = nums[0];
+    for num in nums{
+        if num < &min{
+            min = *num;
+        }
+    }
+    min
+}
