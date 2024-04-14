@@ -3,7 +3,6 @@ import './App.css';
 import React, { Component } from 'react';
 import Graph from './components/Graph/Graph';
 
-
 function App() {
  const [response_boxes, set_response_boxes] = useState([]);
   const response_list = response_boxes.map(response_box =>
@@ -11,15 +10,11 @@ function App() {
  );
 
 
- const dataPoints = [{ x: 2.0, y: 2.0 }, {x: 1.0, y: 1.0}];
-
-
  function submit(event){
    if (event.keyCode === 13) {
      sendText();
    }
  }
-
 
  function createAnswerBox(data) {
    data.key=response_boxes.length;
@@ -60,11 +55,24 @@ function App() {
  }
 
 
+ const dataPoints = [{x:0, y:0}];
 
+ const maxX = dataPoints.length > 0 ? dataPoints.reduce((max, point) => {
+  return point.x > max ? point.x : max;
+ }, -Infinity) : 0;
 
- function change_graph_dim(x, y) {
-   document.getElementById("graph");
- }
+ const maxY = dataPoints.length > 0 ? dataPoints.reduce((max, point) => {
+  return point.y > max ? point.y : max;
+ }, -Infinity) : 0;
+
+ const minX = dataPoints.length > 0 ? dataPoints.reduce((min, point) => {
+  return point.x < min ? point.x : min;
+ }, Infinity) : 0;
+
+ const minY = dataPoints.length > 0 ? dataPoints.reduce((min, point) => {
+  return point.y < min ? point.y : min;
+ }, Infinity) : 0;
+
 
 
  return (
@@ -74,14 +82,19 @@ function App() {
        <div className='help-id'>Command 'help' for help</div>
      </div>
      <div className="blackbox">
-       <div className="command-line">
+       <div className="command-line" id="command-line">
          {
            response_list
          }
          <span className="blinking">&gt;</span>
          <input type="text" id="command-input" autoFocus={true} autoCorrect='off' spellCheck='false' onBlur={({ target }) => target.focus()} autoComplete="off" className="input_text" onKeyDown={submit}></input>
        </div>
-       <Graph id='graph' dataPoints={dataPoints}></Graph>
+       <Graph
+          minX={minX}
+          maxX={maxX}
+          minY={minY}
+          maxY={maxY}
+          dataPoints={dataPoints}></Graph>
      </div>
   
    </main>
