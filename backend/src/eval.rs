@@ -23,7 +23,9 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
                         BinaryOperation::Exponent => {
                             return Ok(left_result.powf(right_result));
                         }
-                        BinaryOperation::Modulus => todo!(),
+                        BinaryOperation::Modulus => {
+                            return Ok(left_result % right_result)
+                        },
                     }
                 }
                 (Ok(_), Err(e)) => {
