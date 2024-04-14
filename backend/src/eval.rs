@@ -187,7 +187,7 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
                 } else {
                     match evaluate_ast(a.inputs[0].clone()) {
                         Ok(a) => {
-                            Ok(1./a.sec())
+                            Ok(1./a.sin())
                         }
                         Err(e) => {
                             return Err(format!("Syntax Error: {:?}", e));
