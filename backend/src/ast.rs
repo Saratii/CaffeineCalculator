@@ -200,6 +200,9 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
             Token::FunctionCall(a) => {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::FunctionCall(a)));
             }
+            Token::Help => {
+                return Err("Don't embed help in expressions".to_string());
+            }
         }
     }
     Ok(stack.pop().unwrap())

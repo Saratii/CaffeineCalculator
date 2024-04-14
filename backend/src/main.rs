@@ -8,7 +8,7 @@ use actix_web::web::Json;
 use serde::{Deserialize, Serialize};
 use crate::ast::build_ast;
 use crate::eval::evaluate_ast;
-use crate::tokens::tokenize;
+use crate::tokens::{Token, tokenize};
 
 #[derive(Serialize, Debug)]
 struct ResponseData {
@@ -27,6 +27,10 @@ async fn main() -> std::io::Result<()> {
         let tokens = tokenize(payload.0.text);
         match tokens{
             Ok(tokens) => {
+                if tokens.len() == 1 && tokens[0] == Token::Help {
+                    println!("Literally Anything");
+                    return Ok(web::Json(ResponseData{message: "Literally Anything".to_string()}));
+                }
                 let ast = build_ast(tokens);
                 match ast {
                     Ok(ast) => {

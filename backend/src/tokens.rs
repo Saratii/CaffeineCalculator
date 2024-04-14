@@ -14,6 +14,7 @@ pub enum Token {
     RightParen,
     FunctionCall(String),
     Comma,
+    Help,
 }
 
 pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
@@ -28,6 +29,7 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
     let exponent_re = Regex::new(r"^\^").unwrap();
     let function_re = Regex::new(r"^([a-z]+)\(").unwrap();
     let comma_re = Regex::new(r"^,").unwrap();
+    let help_re = Regex::new(r"^help").unwrap();
     let mut input = input.trim();
     let mut tokens = VecDeque::new();
     if input.is_empty(){
@@ -67,6 +69,9 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
         } else if comma_re.is_match(input) {
             tokens.push_back(Token::Comma);
             input = &input[1..];
+        } else if help_re.is_match(input) {
+            tokens.push_back(Token::Help);
+            input = &input[4..];
         } else if number_re.is_match(input) {
             let value = number_re.captures(input).unwrap()[0].to_string();
             let length = value.len();
