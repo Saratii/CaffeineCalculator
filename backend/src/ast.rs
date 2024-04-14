@@ -61,7 +61,7 @@ pub enum UnfinishedNode {
     Negate,
     FunctionCall(String),
 }
-
+//the main logic behind the app is a highly complex abstrat syntax tree
 pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
     let mut stack = vec![];
     while !tokens.is_empty() {
@@ -221,6 +221,7 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
     };
 }
 
+//combines values once all necessary components are in the stack
 fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
     if stack.len() == 1 {
         return Ok(())
@@ -374,6 +375,7 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
     }
 }
 
+//PEMDAS!
 fn apply_priority(node: ASTNode) -> ASTNode {
     return match node.clone() {
         ASTNode::BinaryNode(a) => {
@@ -406,6 +408,7 @@ fn apply_priority(node: ASTNode) -> ASTNode {
     }
 }
 
+//unit tests to ensure nothing breaks
 #[cfg(test)]
 mod tests {
     use std::collections::VecDeque;

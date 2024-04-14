@@ -1,7 +1,9 @@
 use crate::{ast::{ASTNode, BinaryOperation, FunctionCall, UnaryOperation}, math::{average, factorial, max, median, min, standard_deviation, sum}};
 
+//all available standard functions
 pub const FUNCTIONS: &'static [&'static str] = &["average", "sin", "cos", "tan", "asin", "acos", "atan", "sec", "csc", "cot", "ln", "factorial", "mean", "median", "mode", "average", "avg", "abs", "max", "min", "std"];
 
+//returns a string of data from a abstract syntax tree
 pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
     match ast {
         ASTNode::BinaryNode(a) => {
@@ -28,6 +30,7 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
                         },
                     }
                 }
+                //reduncant eror handeling and logging
                 (Ok(_), Err(e)) => {
                     println!("Error: {}", e);
                     return Err(e);

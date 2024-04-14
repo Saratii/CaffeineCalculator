@@ -1,3 +1,4 @@
+//popular math operations 
 pub fn factorial(n: f64) -> f64 {
     if !is_positive_integer(n){
         return -1.

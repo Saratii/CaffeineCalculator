@@ -23,6 +23,7 @@ struct Request {
     text: String,
 }
 
+//asyncrhonously read and respond to api requests from the frontend
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
     fn receive_string(payload: Json<Request>) -> Result<impl Responder, Error> {
@@ -50,6 +51,7 @@ async fn main() -> std::io::Result<()> {
                         },
                     }
                 }
+                //heavy redundency in error handeling to prevent crashing
                 let ast = build_ast(tokens);
                 match ast {
                     Ok(ast) => {
@@ -81,6 +83,7 @@ async fn main() -> std::io::Result<()> {
         }
     }
 
+    //definition for the server connetion
     HttpServer::new(|| {
         App::new()
             .wrap(
@@ -95,7 +98,7 @@ async fn main() -> std::io::Result<()> {
                 web::get().to(|| async { HttpResponse::Ok().body("Hello, world!") }),
             )
             .route(
-                "/calculate",
+                "/calculate", //defining endponts
                 web::post().to(|payload: Json<Request>| async move { receive_string(payload) }),
             )
     })
