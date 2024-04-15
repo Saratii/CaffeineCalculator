@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import './App.css';
-import React, { Component } from 'react';
+import React from 'react';
 import Graph from './components/Graph/Graph';
 
 function App() {

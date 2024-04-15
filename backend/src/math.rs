@@ -1,13 +1,15 @@
-//popular math operations 
+pub fn validate(n: f64, func: &String) -> bool{
+    if func == "factorial"{
+        return is_positive_integer(n)
+    }
+    true
+}
+
 pub fn factorial(n: f64) -> f64 {
-    if !is_positive_integer(n){
-        return -1.
+    if n == 0.{
+        return 1.
     }
-    if n == 0. {
-        1.
-    } else {
-        n * factorial(n - 1.)
-    }
+    n * factorial(n - 1.)
 }
 
 pub fn is_positive_integer(num: f64) -> bool {

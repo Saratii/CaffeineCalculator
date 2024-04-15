@@ -20,9 +20,8 @@ pub enum Token {
     Variable(String),
     Equal,
 }
-//Tokenize parses raw input into tokens, a data structure that can be better utilized.
+
 pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
-    //regex searches the input text for patterns
     let plus_re = Regex::new(r"^\+").unwrap();
     let minus_re = Regex::new(r"^-").unwrap();
     let times_re = Regex::new(r"^\*").unwrap();
@@ -105,7 +104,6 @@ pub fn tokenize(input: String) -> Result<VecDeque<Token>, String> {
     return Ok(tokens);
 }
 
-//unit tests ensure we dont accidently break stuff
 #[cfg(test)]
 mod test {
     use crate::tokens::{Token, tokenize};

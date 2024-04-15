@@ -16,7 +16,6 @@ impl Display for Point {
     }
 }
 
-//graphing utility to generate data point
 pub fn graph(mut tokens: VecDeque<Token>) -> Result<Vec<Point>, String> {
     if *tokens.front().unwrap() == Token::Graph {
         tokens.pop_front();
@@ -83,7 +82,6 @@ pub fn graph(mut tokens: VecDeque<Token>) -> Result<Vec<Point>, String> {
     }
 }
 
-//parses and solves the left and right hand side of equations like y=mx+b
 fn solve_for_variable(mut left: ASTNode, mut right: ASTNode) -> f64 {
     if get_variables(&left).len() > 0 && get_variables(&right).len() == 0 {
         let mut right = evaluate_ast(right).unwrap();
@@ -279,7 +277,6 @@ fn get_variables(node: &ASTNode) -> Vec<String> {
     return variables;
 }
 
-//optimizations
 fn reduce_ast(node: &ASTNode) -> Result<ASTNode, String> {
     match node {
         ASTNode::BinaryNode(a) => {
@@ -376,7 +373,6 @@ fn reduce_ast(node: &ASTNode) -> Result<ASTNode, String> {
     }
 }
 
-//evaluates and replaces variables with values. 
 fn replace_variables(node: &ASTNode, variable: &String, value: f64) -> ASTNode {
     match node {
         ASTNode::BinaryNode(a) => {
@@ -423,8 +419,6 @@ fn replace_variables(node: &ASTNode, variable: &String, value: f64) -> ASTNode {
     }
 }
 
-
-//unit tests
 #[cfg(test)]
 mod tests {
     use crate::graph::{graph, Point};

@@ -1,4 +1,4 @@
-use crate::{ast::{ASTNode, BinaryOperation, FunctionCall, UnaryOperation}, math::{average, factorial, max, median, min, standard_deviation, sum}};
+use crate::{ast::{ASTNode, BinaryOperation, FunctionCall, UnaryOperation}, math::{average, factorial, max, median, min, standard_deviation, sum, validate}};
 
 //all available standard functions
 pub const FUNCTIONS: &'static [&'static str] = &["sum", "average", "sin", "cos", "tan", "asin", "acos", "atan", "sec", "csc", "cot", "ln", "factorial", "mean", "median", "mode", "average", "avg", "abs", "max", "min", "std"];
@@ -144,7 +144,14 @@ fn evaluate_single_param(a: FunctionCall, func: fn(f64) -> f64) -> Result<f64, S
         return Err(format!("{} takes one argument moron", a.operation));
     }
     match evaluate_ast(a.inputs[0].clone()) {
-        Ok(value) => Ok(func(value)),
+        Ok(value) => {
+            if validate(value, &a.operation){
+                Ok(func(value))
+            } else {
+                Err(format!("Invalid input for {}", a.operation))
+            }
+            
+        },
         Err(e) => Err(format!("Syntax Error: {:?}", e)),
     }
 }
@@ -162,4 +169,17 @@ fn evaluate_multi_param(a: FunctionCall, func: fn(Vec<f64>) -> f64) -> Result<f6
         }
     }
     Ok(func(vals))
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{ast::build_ast, eval::evaluate_ast, tokens::tokenize};
+
+    #[test]
+    fn factorial_parse(){
+        let tokens = tokenize("factorial(8)".to_string()).unwrap();
+        let ast = build_ast(tokens).unwrap();
+        let result = evaluate_ast(ast).unwrap();
+        assert_eq!(result, 40320.);
+    }   
 }

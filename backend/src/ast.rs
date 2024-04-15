@@ -61,15 +61,38 @@ pub enum UnfinishedNode {
     Negate,
     FunctionCall(String),
 }
-//the main logic behind the app is a highly complex abstrat syntax tree
+
 pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
     let mut stack = vec![];
     while !tokens.is_empty() {
         let token = tokens.pop_front().unwrap();
         match token {
             Token::Number(a) => {
-                stack.push(ASTNode::NumberNode(a));
-                let _ = combine_finished_val(&mut stack);
+                if stack.len() > 0{
+                    let previous = stack.pop().unwrap();
+                    match &previous{
+                        ASTNode::UnfinishedNode(b) => {
+                            match b{
+                                UnfinishedNode::FunctionCall(_) => {
+                                    stack.push(previous);
+                                    stack.push(ASTNode::NumberNode(a));
+                                },
+                               _ => {
+                                stack.push(previous);
+                                stack.push(ASTNode::NumberNode(a));
+                                let _ = combine_finished_val(&mut stack);
+                               }
+                            }
+                        },
+                        _ => {
+                            stack.push(previous);
+                            stack.push(ASTNode::NumberNode(a));
+                            let _ = combine_finished_val(&mut stack);
+                        }
+                    }
+                } else {
+                    stack.push(ASTNode::NumberNode(a));
+                }
             }
             Token::Plus => {
                 stack.push(ASTNode::UnfinishedNode(UnfinishedNode::Plus))
@@ -221,7 +244,6 @@ pub fn build_ast(mut tokens: VecDeque<Token>) -> Result<ASTNode, String> {
     };
 }
 
-//combines values once all necessary components are in the stack
 fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
     if stack.len() == 1 {
         return Ok(())
@@ -375,7 +397,6 @@ fn combine_finished_val(stack: &mut Vec<ASTNode>) -> Result<(), String> {
     }
 }
 
-//PEMDAS!
 fn apply_priority(node: ASTNode) -> ASTNode {
     return match node.clone() {
         ASTNode::BinaryNode(a) => {
@@ -408,7 +429,6 @@ fn apply_priority(node: ASTNode) -> ASTNode {
     }
 }
 
-//unit tests to ensure nothing breaks
 #[cfg(test)]
 mod tests {
     use std::collections::VecDeque;
@@ -618,6 +638,17 @@ mod tests {
     fn one_plus_ln_parse(){
         let tokens = tokenize("1+ln(2)".to_string()).unwrap();
         let ast = build_ast(tokens).unwrap();
-        assert_eq!(ast, ASTNode::BinaryNode(BinaryNode{ priority: 1, left: Box::new(ASTNode::NumberNode(1.)), right: Box::new(ASTNode::FunctionCall(FunctionCall{ inputs: VecDeque::new(), operation: "ln".to_string() })), operation: BinaryOperation::Plus  }))
+        let mut children = VecDeque::new();
+        children.push_front(ASTNode::NumberNode(2.));
+        assert_eq!(ast, ASTNode::BinaryNode(BinaryNode{ priority: 1, left: Box::new(ASTNode::NumberNode(1.)), right: Box::new(ASTNode::FunctionCall(FunctionCall{ inputs: children, operation: "ln".to_string() })), operation: BinaryOperation::Plus}))
+    }
+
+    #[test]
+    fn factorial_parse(){
+        let tokens = tokenize("factorial(8)".to_string()).unwrap();
+        let ast = build_ast(tokens).unwrap();
+        let mut children = VecDeque::new();
+        children.push_front(ASTNode::NumberNode(8.));
+        assert_eq!(ast, ASTNode::FunctionCall(FunctionCall { inputs: children, operation: "factorial".to_string() }))
     }
 }

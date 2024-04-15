@@ -23,86 +23,83 @@ struct Request {
     text: String,
 }
 
-//asyncrhonously read and respond to api requests from the frontend
 #[actix_web::main]
 async fn main() -> std::io::Result<()> {
-    fn receive_string(payload: Json<Request>) -> Result<impl Responder, Error> {
-        println!("Received string: {}", payload.0.text);
-        let tokens = tokenize(payload.0.text.clone());
-        match tokens{
-            Ok(mut tokens) => {
-                if tokens.len() == 1 && tokens[0] == Token::Help {
-                    println!("Help\nSupports Math Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t) csc(t) cot(n)\nStatistics: sum(n1, n2) avg(n1, n2) std(n1, n2)\nGraphing: graph(y=x^3)\nGraph must have y on left and x on right Other: ln(t) factorial(n)");
-                    return Ok(web::Json(ResponseData{message: "Help\nMath Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t)\ncsc(t) cot(n)\nStatistics: median(n1, n2) sum(n1, n2) avg(n1, n2)\nstd(n1, n2) max(n1, n2) min(n1, n2)\nGraph must have y on left and x on right\nOther: ln(t) factorial(n)".to_string()}));
-                } else if tokens.len() > 0 && tokens[0] == Token::Graph {
-                    tokens.pop_front();
-                    tokens.pop_back();
-                    let points = graph(tokens);
-                    match points{
-                        Ok(points) => {
-                            let data_points = points.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
-                            println!("Responding with: {}", data_points);
-                            return Ok(web::Json(ResponseData {
-                                message: data_points,
-                            }));
-                        },
-                        Err(e) => {
-                            return Ok(web::Json(ResponseData{message: payload.0.text + ": " + &e}));
-                        },
-                    }
-                }
-                //heavy redundency in error handeling to prevent crashing
-                let ast = build_ast(tokens);
-                match ast {
-                    Ok(ast) => {
-                        let val = evaluate_ast(ast);
-                        match val {
-                            Ok(val) => {
-                                println!("Responding with: {}", val);
-                                Ok(web::Json(ResponseData{message: (payload.0.text +  " = " + val.to_string().as_str()).to_string()}))
-                            },
-                            Err(e) => {
-                                println!("Failed Eval: {}", e);
-                                println!("Responding with: {}", e);
-                                Ok(web::Json(ResponseData{message: payload.0.text + ": " + &e}))
-                            },
-                        }
-                    },
-                    Err(e) => {
-                        println!("Failed Build AST: {}", e);
-                        println!("Responding with: {}", e);
-                    Ok(web::Json(ResponseData{message: e}))
-                    }, 
-                }
-            },
-            Err(e) => {
-                println!("Failed Tokenize: {}", e);
-                println!("Responding with: {}", e);
-                Ok(web::Json(ResponseData{message: e}))
-            },
-        }
-    }
-
-    //definition for the server connetion
     HttpServer::new(|| {
         App::new()
             .wrap(
-                Cors::default() // Allow all origins by default
+                Cors::default()
                     .allow_any_origin()
                     .allowed_methods(vec!["GET", "POST"])
                     .allowed_header("content-type")
-                    .max_age(3600), // Cache preflight OPTIONS requests for 1 hour
+                    .max_age(3600),
             )
             .route(
                 "/",
                 web::get().to(|| async { HttpResponse::Ok().body("Hello, world!") }),
             )
             .route(
-                "/calculate", //defining endponts
+                "/calculate",
                 web::post().to(|payload: Json<Request>| async move { receive_string(payload) }),
             )
     })
     .bind("127.0.0.1:8080")?
     .run()
     .await
+}
+
+fn receive_string(payload: Json<Request>) -> Result<impl Responder, Error> {
+    println!("Received string: {}", payload.0.text);
+    let tokens = tokenize(payload.0.text.clone());
+    match tokens{
+        Ok(mut tokens) => {
+            if tokens.len() == 1 && tokens[0] == Token::Help {
+                println!("Help\nSupports Math Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t) csc(t) cot(n)\nStatistics: sum(n1, n2) avg(n1, n2) std(n1, n2)\nGraphing: graph(y=x^3)\nGraph must have y on left and x on right Other: ln(t) factorial(n)");
+                return Ok(web::Json(ResponseData{message: "Help\nMath Input: 3+4(2 + 9)*(-1)^3\nTrigonometry: sin(t) cos(t) tan(t) asin(t) acos(t) atan(t) sec(t)\ncsc(t) cot(n)\nStatistics: median(n1, n2) sum(n1, n2) avg(n1, n2)\nstd(n1, n2) max(n1, n2) min(n1, n2)\nGraph must have y on left and x on right\nOther: ln(t) factorial(n)".to_string()}));
+            } else if tokens.len() > 0 && tokens[0] == Token::Graph {
+                tokens.pop_front();
+                tokens.pop_back();
+                let points = graph(tokens);
+                match points{
+                    Ok(points) => {
+                        let data_points = points.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
+                        println!("Responding with: {}", data_points);
+                        return Ok(web::Json(ResponseData {
+                            message: data_points,
+                        }));
+                    },
+                    Err(e) => {
+                        return Ok(web::Json(ResponseData{message: payload.0.text + ": " + &e}));
+                    },
+                }
+            }
+            let ast = build_ast(tokens);
+            match ast {
+                Ok(ast) => {
+                    let val = evaluate_ast(ast);
+                    match val {
+                        Ok(val) => {
+                            println!("Responding with: {}", val);
+                            Ok(web::Json(ResponseData{message: (payload.0.text +  " = " + val.to_string().as_str()).to_string()}))
+                        },
+                        Err(e) => {
+                            println!("Failed Eval: {}", e);
+                            println!("Responding with: {}", e);
+                            Ok(web::Json(ResponseData{message: payload.0.text + ": " + &e}))
+                        },
+                    }
+                },
+                Err(e) => {
+                    println!("Failed Build AST: {}", e);
+                    println!("Responding with: {}", e);
+                Ok(web::Json(ResponseData{message: e}))
+                }, 
+            }
+        },
+        Err(e) => {
+            println!("Failed Tokenize: {}", e);
+            println!("Responding with: {}", e);
+            Ok(web::Json(ResponseData{message: e}))
+        },
+    }
 }
