@@ -1,6 +1,13 @@
-pub fn validate(n: f64, func: &String) -> bool{
+pub fn validate(n: &Vec<f64>, func: &String) -> bool{
+    if ["sin".to_string(), "cos".to_string()].contains(func){
+        if n.len() > 1{
+            return false
+        }
+    }
     if func == "factorial"{
-        return is_positive_integer(n)
+        if  !is_positive_integer(n[0]){
+            return false
+        }
     }
     true
 }

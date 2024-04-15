@@ -1,9 +1,12 @@
 use crate::{ast::{ASTNode, BinaryOperation, FunctionCall, UnaryOperation}, math::{average, factorial, max, median, min, standard_deviation, sum, validate}};
 
-//all available standard functions
 pub const FUNCTIONS: &'static [&'static str] = &["sum", "average", "sin", "cos", "tan", "asin", "acos", "atan", "sec", "csc", "cot", "ln", "factorial", "mean", "median", "mode", "average", "avg", "abs", "max", "min", "std"];
 
-//returns a string of data from a abstract syntax tree
+enum Function{
+    OneToOne(fn(f64) -> f64),
+    MultiToOne(fn(Vec<f64>) -> f64),
+}
+
 pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
     match ast {
         ASTNode::BinaryNode(a) => {
@@ -71,45 +74,7 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
             return Err(format!("Syntax Error: {:?}", a).to_owned())
         }
         ASTNode::FunctionCall(a) => {
-            if a.operation == "average" || a.operation == "avg" || a.operation == "mean" {
-                evaluate_multi_param(a, average)
-            } else if a.operation == "std" {
-                evaluate_multi_param(a, standard_deviation)
-            } else if a.operation == "median" {
-                evaluate_multi_param(a, median)
-            } else if a.operation == "min" {
-                evaluate_multi_param(a, min)
-            } else if a.operation == "max" {
-                evaluate_multi_param(a, max)
-            } else if a.operation == "sum" {
-                evaluate_multi_param(a, sum)
-            } else if a.operation == "sin" {
-                evaluate_single_param(a, f64::sin)
-            } else if a.operation == "cos" {
-                evaluate_single_param(a, f64::cos)
-            } else if a.operation == "tan" {
-                evaluate_single_param(a, f64::tan)
-            } else if a.operation == "asin" {
-                evaluate_single_param(a, f64::asin)
-            } else if a.operation == "acos" {
-                evaluate_single_param(a, f64::acos)
-            } else if a.operation == "atan" {
-                evaluate_single_param(a, f64::atan)
-            } else if a.operation == "sec" {
-                evaluate_single_param(a, |x| 1. / f64::cos(x))
-            } else if a.operation == "cot" {
-                evaluate_single_param(a, |x| 1. / f64::tan(x))
-            } else if a.operation == "csc" {
-                evaluate_single_param(a, |x| 1. / f64::sin(x))
-            } else if a.operation == "ln" {
-                evaluate_single_param(a, |x| x.ln())
-            } else if a.operation == "abs" {
-                evaluate_single_param(a, |x| x.abs())
-            } else if a.operation == "factorial" {
-                evaluate_single_param(a, factorial)
-            } else {
-                return Err(format!("Unknown function: {:?}", a.operation));
-            }
+            return evaluate_function(a)
         }
         ASTNode::Comma => {
             return Err("Syntax Error, stray comma?".to_string());
@@ -120,55 +85,66 @@ pub fn evaluate_ast(ast: ASTNode) -> Result<f64, String> {
     }
 }
 
-pub fn evaluate_function_call(function_call: FunctionCall) -> Result<f64, String> {
-    if function_call.operation == "average" {
-        let mut total = 0.0;
-        for child in function_call.inputs {
-            match evaluate_ast(child) {
-                Ok(a) => {
-                    total += a;
-                }
-                Err(e) => {
-                    return Err(format!("Syntax Error: {:?}", e));
-                }
-            }
-        }
-        Ok(total)
+pub fn evaluate_function(function_call: FunctionCall) -> Result<f64, String> {
+    let func;
+    if function_call.operation == "average" || function_call.operation == "avg" || function_call.operation == "mean" {
+        func = Function::MultiToOne(average);
+    } else if function_call.operation == "std" {
+        func = Function::MultiToOne(standard_deviation);
+    } else if function_call.operation == "median" {
+        func = Function::MultiToOne(median);
+    } else if function_call.operation == "min" {
+        func = Function::MultiToOne(min);
+    } else if function_call.operation == "max" {
+        func = Function::MultiToOne(max);
+    } else if function_call.operation == "sum" {
+        func = Function::MultiToOne(sum);
+    } else if function_call.operation == "sin" {
+        func = Function::OneToOne(f64::sin);
+    } else if function_call.operation == "cos" {
+        func = Function::OneToOne(f64::cos);
+    } else if function_call.operation == "tan" {
+        func = Function::OneToOne(f64::tan);
+    } else if function_call.operation == "asin" {
+        func = Function::OneToOne(f64::asin);
+    } else if function_call.operation == "acos" {
+        func = Function::OneToOne(f64::acos);
+    } else if function_call.operation == "atan" {
+        func = Function::OneToOne(f64::atan);
+    } else if function_call.operation == "sec" {
+        func = Function::OneToOne(|x| 1. / f64::cos(x));
+    } else if function_call.operation == "cot" {
+        func = Function::OneToOne(|x| 1. / f64::tan(x));
+    } else if function_call.operation == "csc" {
+        func = Function::OneToOne(|x| 1. / f64::sin(x));
+    } else if function_call.operation == "ln" {
+        func = Function::OneToOne(|x| x.ln());
+    } else if function_call.operation == "abs" {
+        func = Function::OneToOne(|x| x.abs());
+    } else if function_call.operation == "factorial" {
+        func = Function::OneToOne(factorial);
     } else {
         return Err(format!("Unknown function: {:?}", function_call.operation));
     }
-}
-
-fn evaluate_single_param(a: FunctionCall, func: fn(f64) -> f64) -> Result<f64, String> {
-    if a.inputs.len() != 1 {
-        return Err(format!("{} takes one argument moron", a.operation));
-    }
-    match evaluate_ast(a.inputs[0].clone()) {
-        Ok(value) => {
-            if validate(value, &a.operation){
-                Ok(func(value))
-            } else {
-                Err(format!("Invalid input for {}", a.operation))
-            }
-            
-        },
-        Err(e) => Err(format!("Syntax Error: {:?}", e)),
-    }
-}
-
-fn evaluate_multi_param(a: FunctionCall, func: fn(Vec<f64>) -> f64) -> Result<f64, String>{
-    let mut vals = Vec::new();
-    for child in a.inputs {
+    let mut paramaters = Vec::new();
+    for child in function_call.inputs {
         match evaluate_ast(child) {
             Ok(a) => {
-                vals.push(a);
+                paramaters.push(a);
             }
             Err(e) => {
                 return Err(format!("Syntax Error: {:?}", e));
             }
         }
     }
-    Ok(func(vals))
+    if validate(&paramaters, &function_call.operation){
+        match func{
+            Function::OneToOne(f) => Ok(f(paramaters[0])),
+            Function::MultiToOne(f) => Ok(f(paramaters)),
+        }
+    } else {
+        Err(format!("Invalid input for {}", function_call.operation))
+    }
 }
 
 #[cfg(test)]

@@ -1,7 +1,7 @@
 use std::collections::VecDeque;
 use std::fmt::{Display, Formatter};
 use crate::ast::{ASTNode, BinaryNode, BinaryOperation, build_ast, FunctionCall, UnaryNode, UnaryOperation};
-use crate::eval::{evaluate_ast, evaluate_function_call};
+use crate::eval::{evaluate_ast, evaluate_function};
 use crate::tokens::Token;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -55,7 +55,7 @@ pub fn graph(mut tokens: VecDeque<Token>) -> Result<Vec<Point>, String> {
                 match evaluate_ast(right) {
                     Ok(_right_val) => {
                         let _left = reduce_ast(&left);
-                        panic!();
+                        return Err("Syntax Error".to_string())
                     }
                     Err(e) => {
                         return Err(format!("Syntax Error: {}", e))
@@ -354,7 +354,7 @@ fn reduce_ast(node: &ASTNode) -> Result<ASTNode, String> {
                     operation: a.operation.clone(),
                 }));
             } else {
-                match evaluate_function_call(FunctionCall {
+                match evaluate_function(FunctionCall {
                     inputs,
                     operation: a.operation.clone(),
                 }) {
