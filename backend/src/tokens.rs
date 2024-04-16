@@ -161,4 +161,16 @@ mod test {
         let tokens = tokenize("1+ln(2)".to_string()).unwrap();
         assert_eq!(tokens, vec![Token::Number(1.), Token::Plus, Token::FunctionCall("ln".to_string()), Token::Number(2.), Token::RightParen]);
     }
+
+    #[test]
+    fn tokenizes_y_5x(){
+        let tokens = tokenize("graph(y=5x)".to_string()).unwrap();
+        assert_eq!(tokens, vec![Token::Graph, Token::Variable("y".to_string()), Token::Equal, Token::Number(5.0), Token::Variable("x".to_string()), Token::RightParen]);
+    }
+
+    #[test]
+    fn tokenizes_y_sinx(){
+        let tokens = tokenize("graph(y=sin(x))".to_string()).unwrap();
+        assert_eq!(tokens, vec![Token::Graph, Token::Variable("y".to_string()), Token::Equal, Token::FunctionCall("sin".to_string()), Token::Variable("x".to_string()), Token::RightParen, Token::RightParen]);
+    }
 }

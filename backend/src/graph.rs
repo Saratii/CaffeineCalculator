@@ -39,42 +39,31 @@ pub fn graph(mut tokens: VecDeque<Token>) -> Result<Vec<Point>, String> {
     let right = build_ast(right);
     match (left, right) {
         (Ok(left), Ok(right)) => {
-            let left_variables = get_variables(&left);
+            let mut points = vec![];
             let right_variables = get_variables(&right);
-            if left_variables.len() == 0 {
-                match evaluate_ast(left) {
-                    Ok(_left_val) => {
-                        let _right = reduce_ast(&right);
-                        panic!();
-                    }
-                    Err(e) => {
-                        return Err(format!("Syntax Error: {}", e))
-                    }
-                }
-            } else if right_variables.len() == 0 {
-                match evaluate_ast(right) {
-                    Ok(_right_val) => {
-                        let _left = reduce_ast(&left);
-                        return Err("Syntax Error".to_string())
-                    }
-                    Err(e) => {
-                        return Err(format!("Syntax Error: {}", e))
-                    }
-                }
-            } else {
-                let mut points = vec![];
+            let left_variables = get_variables(&left);
+            if right_variables.contains(&"y".to_string()){
                 for i in -50..50 {
-                    let variable = right_variables.get(0).unwrap();
-                    let subbed_left = replace_variables(&left, variable, i as f64/5.0);
-                    let subbed_right = replace_variables(&right, variable, i as f64/5.0);
-                    let val = solve_for_variable(subbed_left, subbed_right);
-                    points.push(Point {
-                        x: i as f64 / 5.0,
-                        y: val,
-                    });
-                }
-                return Ok(points);
+                    let subbed_left = replace_variables(&left, &"x".to_string(), i as f64/5.0);
+                    match evaluate_ast(subbed_left){
+                        Ok(y) =>  points.push(Point { x: i as f64/5., y }),
+                        Err(e) => return Err(format!("Syntax Error: {}", e)),
+                    }
+                };
+            } else if left_variables.contains(&"y".to_string()){
+                for i in -50..50 {
+                    let subbed_right = replace_variables(&right, &"x".to_string(), i as f64/5.0);
+                    match evaluate_ast(subbed_right){
+                        Ok(y) => {
+                            points.push(Point { x: i as f64/5., y });
+                        },
+                        Err(e) => return Err(format!("Syntax Error: {}", e)),
+                    }
+                };
+            } else {
+                return Err("Syntax Error".to_string())
             }
+            return Ok(points)
         }
         (_,_) => {
             return Err("Syntax Error".to_owned())
@@ -433,6 +422,34 @@ mod tests {
             expected_results.push(Point {
                 x: i as f64 / 5.0,
                 y: i as f64,
+            });
+        }
+        assert_eq!(output, Ok(expected_results));
+    }
+
+    #[test]
+    fn graph_of_sin_works() {
+        let input = tokenize("graph(y=sin(x))".to_string()).unwrap();
+        let output = graph(input);
+        let mut expected_results = vec![];
+        for i in -50..50 {
+            expected_results.push(Point {
+                x: (i as f64).sin(),
+                y: i as f64,
+            });
+        }
+        assert_eq!(output, Ok(expected_results));
+    }
+
+    #[test]
+    fn graph_of_y_equals_4() {
+        let input = tokenize("graph(y=4)".to_string()).unwrap();
+        let output = graph(input);
+        let mut expected_results = vec![];
+        for i in -50..50 {
+            expected_results.push(Point {
+                x: i as f64/5.,
+                y: 4.,
             });
         }
         assert_eq!(output, Ok(expected_results));

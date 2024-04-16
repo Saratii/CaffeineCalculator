@@ -63,7 +63,6 @@ fn receive_string(payload: Json<Request>) -> Result<impl Responder, Error> {
                 match points{
                     Ok(points) => {
                         let data_points = points.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(",");
-                        println!("Responding with: {}", data_points);
                         return Ok(web::Json(ResponseData {
                             message: data_points,
                         }));

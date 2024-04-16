@@ -72,22 +72,6 @@ function App() {
         });
     }
 
-    const maxX = graph_points.length > 0 ? graph_points.reduce((max, point) => {
-        return point.x > max ? point.x : max;
-    }, -Infinity) : 0;
-
-    const maxY = graph_points.length > 0 ? graph_points.reduce((max, point) => {
-        return point.y > max ? point.y : max;
-    }, -Infinity) : 0;
-
-    const minX = graph_points.length > 0 ? graph_points.reduce((min, point) => {
-        return point.x < min ? point.x : min;
-    }, Infinity) : 0;
-
-    const minY = graph_points.length > 0 ? graph_points.reduce((min, point) => {
-        return point.y < min ? point.y : min;
-    }, Infinity) : 0;
-
     return (
         <main className="container">
             <div className="top-screen">
@@ -104,11 +88,12 @@ function App() {
                 </div>
                 <Graph
                     funct={graph_funct}
-                    minX={minX}
-                    maxX={maxX}
-                    minY={minY}
-                    maxY={maxY}
-                    dataPoints={graph_points}></Graph>
+                    minX={-10}
+                    maxX={10}
+                    minY={-10}
+                    maxY={10}
+                    dataPoints={graph_points}>
+                </Graph>
             </div>
         </main>
     )
